@@ -282,15 +282,14 @@ def kitti_test(eval_set, epoch=0, write_tboard=False):
                 break
             
     recall_at_n = correct_at_n / eval_set.numQ
-    print(recall_at_n)
 
-    # recalls = {} #make dict for output # TODO
-    # for i,n in enumerate(n_values):
-    #     recalls[n] = recall_at_n[i]
-    #     print("====> Recall@{}: {:.4f}".format(n, recall_at_n[i]))
-    #     if write_tboard: writer.add_scalar('Val/Recall@' + str(n), recall_at_n[i], epoch)
+    recalls = {} #make dict for output # TODO
+    for i,n in enumerate(n_values):
+        recalls[n] = recall_at_n[i]
+        print("====> Recall@{}: {:.4f}".format(n, recall_at_n[i]))
+        if write_tboard: writer.add_scalar('Val/Recall@' + str(n), recall_at_n[i], epoch)
 
-    # return recalls
+    return recalls
 
 def get_clusters(cluster_set):
     nDescriptors = 50000
