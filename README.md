@@ -1,11 +1,13 @@
 # Visual Language Place Recognition
 
 ## Folder Structure
+```
 ${ROOT}
-└── lseg/    
-    └── sripts/
-       └── checkpoints/
-          └── demo_e200.ckpt
+└── lseg/
+     └── sripts/
+         └── checkpoints/
+              └── demo_e200.ckpt
+```
 
 ## Evaluation
 ### NetVLAD
