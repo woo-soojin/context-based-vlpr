@@ -1,5 +1,9 @@
 # Visual Language Place Recognition
 
+## Download Dataset
+- KITTI dataset (https://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d).
+ - image_2 (.png) and ground truth poses (.txt) are required.
+
 ## Folder Structure
 ```
 ${ROOT}
