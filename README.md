@@ -11,7 +11,14 @@ ${ROOT}
 
 ## Evaluation
 ### NetVLAD
+#### pittsburgh Dataset
+```bash
+python main.py --mode=test --resume=<path to checkpoint> --dataset=pittsburgh
+```
+
 #### KITTI Dataset
+- Used image_2 for the test.
+
 ```bash
 python main.py --mode=kitti --resume=<path to checkpoint> --dataset=kitti
 ```
