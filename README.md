@@ -25,9 +25,10 @@ python main.py --mode=kitti --resume=<path to checkpoint> --dataset=kitti
 
 ### Our Method
 #### KITTI Dataset
+- `dataset`: Dataset to use. (default: `pittsburgh`, options: `pittsburgh`, `kitti`)
 - `build_codebook`: If `True`, generate codebook for BoW. If `False` calculate recall for query images. (default: `False`)
 
 ```bash
 cd <path to repository>/lseg/
-python main.py
+python main.py --dataset=kitti
 ```
