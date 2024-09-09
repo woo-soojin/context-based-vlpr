@@ -14,6 +14,7 @@ from sklearn.neighbors import NearestNeighbors
 import h5py
 
 import math
+import random
 
 root_dir = '/home/soojinwoo/' # TODO
 
@@ -24,16 +25,17 @@ def input_transform():
                                std=[0.229, 0.224, 0.225]),
     ])
 
-def get_kitti_dataset(): # TODO
+def get_kitti_dataset(random_dataset): # TODO
     image_path = join(root_dir, 'kitti/00/image_2') # TODO
     gt_path = join(root_dir, 'kitti/00') # TODO
-    return KittiDataset(image_path, gt_path,
+    return KittiDatasetNetVLAD(image_path, gt_path, random_dataset,
                              input_transform=input_transform())
 
-class KittiDataset(data.Dataset):
-    def __init__(self, image_path, gt_path, input_transform=None, onlyDB=False): # TODO
+class KittiDatasetNetVLAD(data.Dataset):
+    def __init__(self, image_path, gt_path, random_dataset, input_transform=None, onlyDB=False): # TODO
         super().__init__()
 
+        self.random_dataset = random_dataset
         self.input_transform = input_transform
 
         self.whole_image = sorted(os.listdir(image_path))
@@ -42,7 +44,7 @@ class KittiDataset(data.Dataset):
         # ground truth
         self.gt_pose_path = join(gt_path, 'poses.txt')
         with open(self.gt_pose_path, 'r') as poses:
-            self.utmDb = [[float(pose.split()[3]), float(pose.split()[7])] for pose in poses]
+            self.utm_coord = [[float(pose.split()[3]), float(pose.split()[7])] for pose in poses]
         
         # if not onlyDB: # TODO
         #     self.images += [join(queries_dir, qIm) for qIm in self.dbStruct.qImage]
@@ -56,6 +58,14 @@ class KittiDataset(data.Dataset):
 
         self.numDb = int(len(self.images)/2) # TODO
         self.numQ = len(self.images) - self.numDb
+
+        if self.random_dataset:
+            print('===> Randomizing kitti dataset')
+            self.total_dataset = len(self.images)
+            self.randIdx = random.sample(range(self.total_dataset), self.total_dataset)
+
+            self.images = [self.images[i] for i in self.randIdx]
+            self.utm_coord = [self.utm_coord[i] for i in self.randIdx]
 
     def __getitem__(self, index):
         img = Image.open(self.images[index])
@@ -94,9 +104,9 @@ class KittiDataset(data.Dataset):
     def get_positives(self): # TODO
         if  self.positives is None:
             knn = NearestNeighbors(n_jobs=-1)
-            self.utmDb = np.array(self.utmDb)
-            knn.fit(self.utmDb[:self.numDb])
+            self.utm_coord = np.array(self.utm_coord)
+            knn.fit(self.utm_coord[:self.numDb])
 
-            self.distances, self.positives = knn.radius_neighbors(self.utmDb[self.numDb:],
+            self.distances, self.positives = knn.radius_neighbors(self.utm_coord[self.numDb:],
                     radius=self.posDistThr)
         return self.positives
