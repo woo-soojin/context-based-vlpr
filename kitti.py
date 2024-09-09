@@ -15,6 +15,7 @@ import h5py
 
 import math
 import random
+import time
 
 root_dir = '/home/soojinwoo/' # TODO
 
@@ -61,6 +62,8 @@ class KittiDatasetNetVLAD(data.Dataset):
 
         if self.random_dataset:
             print('===> Randomizing kitti dataset')
+            random.seed(time.time())
+            
             self.total_dataset = len(self.images)
             self.randIdx = random.sample(range(self.total_dataset), self.total_dataset)
 
