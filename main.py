@@ -73,6 +73,7 @@ parser.add_argument('--margin', type=float, default=0.1, help='Margin for triple
 parser.add_argument('--split', type=str, default='val', help='Data split to use for testing. Default is val', 
         choices=['test', 'test250k', 'train', 'val'])
 parser.add_argument('--fromscratch', action='store_true', help='Train from scratch rather than using pretrained models')
+parser.add_argument('--random', type=bool, default=False, help='Randomize dataset for test')
 
 def train(epoch):
     epoch_loss = 0
@@ -439,7 +440,7 @@ if __name__ == "__main__":
     elif opt.mode.lower() == 'cluster':
         whole_train_set = dataset.get_whole_training_set(onlyDB=True)
     elif opt.mode.lower() == 'kitti': # TODO
-        whole_test_set = dataset.get_kitti_dataset()
+        whole_test_set = dataset.get_kitti_dataset(opt.random)
         print('===> Evaluating on kitti dataset')
 
     print('===> Building model')
