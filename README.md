@@ -11,6 +11,7 @@
 ${ROOT}
 └── lseg/
      └── data/
+          └── codebook.npy
           └── text_embedding.npy
      └── sripts/
          └── checkpoints/
