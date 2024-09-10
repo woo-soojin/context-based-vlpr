@@ -15,6 +15,9 @@
 ${ROOT}
 └── data/
      └── kitti/
+          └── 00/
+               └── image_2/
+               └── poses.txt
 └── lseg/
      └── codebook.npy
      └── text_embedding.npy
