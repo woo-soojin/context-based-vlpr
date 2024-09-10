@@ -23,7 +23,8 @@ import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
 
 #dir = "/media/aril/DATA/git/lseg_ws/src/vlmaps/data/vlmaps"
-dir = "/home/soojinwoo/git/lseg_ws/src/vlmaps/data" # TODO
+# dir = "/home/soojinwoo/git/lseg_ws/src/vlmaps/data" # TODO
+dir = "/home/soojinwoo/git/lseg_ws/data"
 
 def parse_configs():
     abs_path = os.path.dirname(os.path.abspath(__file__)) 

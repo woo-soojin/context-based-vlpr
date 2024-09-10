@@ -10,6 +10,8 @@
 ```
 ${ROOT}
 └── lseg/
+     └── data/
+          └── text_embedding.npy
      └── sripts/
          └── checkpoints/
               └── demo_e200.ckpt
