@@ -134,6 +134,15 @@ class KittiDatasetLseg(data.Dataset):
         
         return hist
     
+    def bag_of_words_wo_predified_codebook(self, descriptors, num_cluster=100): # TODO # cluster
+        kmeans = KMeans(num_cluster, n_init=10)
+        kmeans.fit(descriptors)
+
+        codebook = kmeans.predict(descriptors)
+        bow_histogram = np.bincount(codebook, minlength=kmeans.n_clusters)
+
+        return bow_histogram
+
     def calculate_recall(self, dbFeat, encoder_dim=10):
         qFeat = dbFeat[self.numDb:].astype('float32') # TODO
         dbFeat = dbFeat[:self.numDb].astype('float32')
