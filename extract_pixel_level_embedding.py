@@ -27,7 +27,7 @@ dir = "/home/soojinwoo/git/lseg_ws/src/vlmaps/data" # TODO
 
 def parse_configs():
     abs_path = os.path.dirname(os.path.abspath(__file__)) 
-    ckpt_path = abs_path + "/scripts/checkpoints/demo_e200.ckpt"
+    ckpt_path = abs_path + "/lseg/scripts/checkpoints/demo_e200.ckpt"
     parser = argparse.ArgumentParser(description="config for vlmap creation")
     parser.add_argument('--data_path', type=str, default=os.path.join(abs_path, 'data'), metavar='PATH', help="the path for dataset required for vlmap creation")
     parser.add_argument('--pretrained_path', type=str, default=ckpt_path, metavar='PATH', help="the path for pretrained checkpoint of lseg")

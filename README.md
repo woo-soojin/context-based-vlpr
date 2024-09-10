@@ -42,6 +42,6 @@ python build_text_embedding.py
 - `build_codebook`: If `True`, generate codebook for BoW. If `False` calculate recall for query images. (default: `False`)
 
 ```bash
-cd <path to repository>/lseg/
-python main.py --dataset=kitti
+cd <path to repository>
+python extract_pixel_level_embedding.py --dataset=kitti
 ```
