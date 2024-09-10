@@ -39,6 +39,7 @@ def parse_configs():
     parser.add_argument('--save_pcd', type=bool, default=False, help='the flag to decide whether to save the accumulated point cloud or not')
     parser.add_argument('--dataset', type=str, default='pittsburgh', help='Dataset to use', choices=['pittsburgh', 'kitti'])
     parser.add_argument('--build_codebook', type=bool, default=False, help='the flag to build codebook')
+    parser.add_argument('--use_codebook', type=bool, default=False, help='the flag to use predefined codebook')
     
     args = parser.parse_args()
 
@@ -202,8 +203,12 @@ def create_lseg_map_batch(pretrained_path, img_save_dir, camera_height, init_tf,
     text_embedding_vectors = np.load("{}/{}".format(dir, "text_embedding.npy")) # TODO
     if configs.build_codebook: # TODO
         total_descriptors = np.empty((len(whole_test_set), 1000, 512)) # TODO size
-    else:
+    elif configs.use_codebook:
         codebook = np.load("{}/{}".format(dir, "codebook.npy"))
+        encoder_dim = 10 # TODO
+        dbFeat = np.empty((len(whole_test_set), encoder_dim))
+    elif not configs.use_codebook:
+        encoder_dim = 10 # TODO
         dbFeat = np.empty((len(whole_test_set), encoder_dim))
 
     for iteration, (input, indices) in enumerate(test_data_loader, 1):
@@ -229,8 +234,11 @@ def create_lseg_map_batch(pretrained_path, img_save_dir, camera_height, init_tf,
 
         if configs.build_codebook:
             total_descriptors[indices,:,:] = query_descriptor
-        else:
+        elif configs.use_codebook:
             query_histogram = whole_test_set.bag_of_words(query_descriptor, codebook)
+            dbFeat[indices, :] = query_histogram
+        elif not configs.use_codebook:
+            query_histogram = whole_test_set.bag_of_words_wo_predified_codebook(query_descriptor, 10) # TODO 10
             dbFeat[indices, :] = query_histogram
 
     if configs.build_codebook:
