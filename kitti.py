@@ -13,11 +13,15 @@ from PIL import Image
 from sklearn.neighbors import NearestNeighbors
 import h5py
 
+import cv2
 import math
 import random
 import time
+import faiss
+import scipy.cluster.vq as vq
+from sklearn.cluster import KMeans
 
-root_dir = '/home/soojinwoo/' # TODO
+root_dir = './data' # TODO
 
 def input_transform():
     return transforms.Compose([

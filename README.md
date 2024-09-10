@@ -9,7 +9,11 @@
 ## Folder Structure
 ```
 ${ROOT}
+└── data/
+     └── kitti/
 └── lseg/
+     └── codebook.npy
+     └── text_embedding.npy
      └── sripts/
          └── checkpoints/
               └── demo_e200.ckpt
