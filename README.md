@@ -4,7 +4,11 @@
 - KITTI dataset </br>
   - image_2 (.png) and ground truth poses (.txt) are required.
 </br>
-  - download link: https://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d
+  - [download link](https://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d)
+
+## Download Checkpoints for LSeg
+- Pre-trained LSeg model </br>
+     - [download link](https://drive.usercontent.google.com/download?id=1ayk6NXURI_vIPlym16f_RG3ffxBWHxvb&authuser=1)
 
 ## Folder Structure
 ```
