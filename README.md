@@ -30,6 +30,13 @@ python main.py --mode=kitti --resume=<path to checkpoint> --dataset=kitti
 ```
 
 ### Our Method
+#### Creat Text Embedding
+- Input custom label set to create text embedding.
+```bash
+cd <path to repository>
+python build_text_embedding.py
+```
+
 #### KITTI Dataset
 - `dataset`: Dataset to use. (default: `pittsburgh`, options: `pittsburgh`, `kitti`)
 - `build_codebook`: If `True`, generate codebook for BoW. If `False` calculate recall for query images. (default: `False`)
