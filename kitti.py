@@ -135,7 +135,7 @@ class KittiDatasetLseg(data.Dataset):
         return hist
     
     def bag_of_words_wo_predified_codebook(self, descriptors, num_cluster=100): # TODO # cluster
-        kmeans = KMeans(num_cluster)
+        kmeans = KMeans(num_cluster, n_init=10)
         kmeans.fit(descriptors)
 
         codebook = kmeans.predict(descriptors)
