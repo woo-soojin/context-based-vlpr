@@ -11,7 +11,11 @@ from PIL import Image
 
 from sklearn.neighbors import NearestNeighbors
 import h5py
+
 import random
+import faiss
+import scipy.cluster.vq as vq
+from sklearn.cluster import KMeans
 
 root_dir = '/home/soojinwoo/pittsburgh'
 if not exists(root_dir):
@@ -65,6 +69,11 @@ def get_val_query_set():
 def get_250k_val_query_set():
     structFile = join(struct_dir, 'pitts250k_val.mat')
     return QueryDatasetFromStruct(structFile,
+                             input_transform=input_transform())
+
+def get_pitts_dataset_lseg(random_dataset):
+    structFile = join(struct_dir, 'pitts30k_val.mat')
+    return PittsDatasetLseg(structFile, random_dataset,
                              input_transform=input_transform())
 
 dbStruct = namedtuple('dbStruct', ['whichSet', 'dataset', 
@@ -157,6 +166,108 @@ class WholeDatasetFromStruct(data.Dataset):
                     radius=self.dbStruct.posDistThr)
 
         return self.positives
+    
+class PittsDatasetLseg(data.Dataset):
+    def __init__(self, structFile, random_dataset, input_transform=None, onlyDB=False):
+        super().__init__()
+
+        self.random_dataset = random_dataset
+        self.input_transform = input_transform
+
+        self.dbStruct = parse_dbStruct(structFile)
+
+        if self.random_dataset: # TODO
+            print('===> Randomizing pittsburgh dataset')
+            self.db_dataset = len(self.dbStruct.dbImage)
+            self.q_dataset = len(self.dbStruct.qImage)
+
+            self.rand_db_idx = random.sample(range(self.db_dataset), self.db_dataset)
+            self.rand_q_idx = random.sample(range(self.q_dataset), self.q_dataset)
+
+        self.db_images = [join(root_dir, dbIm) for dbIm in self.dbStruct.dbImage]
+        self.q_images = [join(queries_dir, qIm) for qIm in self.dbStruct.qImage]
+        if self.random_dataset:
+            self.db_images = [self.db_images[i] for i in self.rand_db_idx]
+            self.q_images = [self.q_images[i] for i in self.rand_q_idx]
+        self.images = self.db_images + self.q_images
+
+        self.whichSet = self.dbStruct.whichSet
+        self.dataset = self.dbStruct.dataset
+
+        self.positives = None
+        self.distances = None
+
+    def __getitem__(self, index):
+        img = Image.open(self.images[index])
+
+        if self.input_transform:
+            img = self.input_transform(img)
+
+        return img, index
+
+    def __len__(self):
+        return len(self.images)
+    
+    def build_codebook(self, X, voc_size=10): # TODO voc_size 10
+        n, desc, dim = X.shape
+        X = X.reshape(n*desc, dim)
+        
+        kmeans = KMeans(n_clusters= voc_size, n_init=10)
+        kmeans.fit(X)
+        pred = kmeans.cluster_centers_
+        
+        return pred
+    
+    def bag_of_words(self, descriptor, codebook):
+        descriptor=descriptor.tolist()
+        index = vq.vq(descriptor,codebook)
+        hist, _ = np.histogram(index,bins=range(codebook.shape[0] + 1), density=True)
+        
+        return hist
+
+    def getPositives(self):
+        # positives for evaluation are those within trivial threshold range
+        #fit NN to find them, search by radius
+        if self.random_dataset:
+            self.utmDb = [self.dbStruct.utmDb[i] for i in self.rand_db_idx]
+            self.utmQ = [self.dbStruct.utmQ[i] for i in self.rand_q_idx]
+        else:
+            self.utmDb = self.dbStruct.utmDb
+            self.utmQ = self.dbStruct.utmQ
+
+        if  self.positives is None:
+            knn = NearestNeighbors(n_jobs=-1)
+            knn.fit(self.utmDb)
+
+            self.distances, self.positives = knn.radius_neighbors(self.utmQ,
+                    radius=self.dbStruct.posDistThr)
+
+        return self.positives
+    
+    def calculate_recall(self, dbFeat, encoder_dim=10):
+        qFeat = dbFeat[self.dbStruct.numDb:].astype('float32') # TODO
+        dbFeat = dbFeat[:self.dbStruct.numDb].astype('float32')
+        
+        print('====> Building faiss index')
+        faiss_index = faiss.IndexFlatL2(encoder_dim)
+        faiss_index.add(dbFeat)
+
+        print('====> Calculating recall @ N')
+        n_values = [1,5,10,20]
+
+        _, predictions = faiss_index.search(qFeat, max(n_values)) 
+        gt = self.getPositives() 
+
+        # for each query get those within threshold distance
+        correct_at_n = np.zeros(len(n_values))
+        for qIx, pred in enumerate(predictions):
+            for i,n in enumerate(n_values):
+                if np.any(np.in1d(pred[:n], gt[qIx])):
+                    correct_at_n[i:] += 1
+                    break
+                
+        recall_at_n = correct_at_n / self.dbStruct.numQ
+        print(recall_at_n)
         
 def collate_fn(batch):
     """Creates mini-batch tensors from the list of tuples (query, positive, negatives).
