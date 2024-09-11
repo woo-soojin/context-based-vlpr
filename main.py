@@ -31,7 +31,7 @@ from torchvision import transforms
 total_n = 17608
 
 parser = argparse.ArgumentParser(description='pytorch-NetVlad')
-parser.add_argument('--mode', type=str, default='train', help='Mode', choices=['train', 'test', 'cluster', 'kitti']) # TODO
+parser.add_argument('--mode', type=str, default='train', help='Mode', choices=['train', 'test', 'cluster']) # TODO
 parser.add_argument('--batchSize', type=int, default=4, 
         help='Number of triplets (query, pos, negs). Each triplet consists of 12 images.')
 parser.add_argument('--cacheBatchSize', type=int, default=24, help='Batch size for caching and testing')
@@ -432,16 +432,17 @@ if __name__ == "__main__":
             whole_test_set = dataset.get_whole_training_set()
             print('===> Evaluating on train set')
         elif opt.split.lower() == 'val':
-            whole_test_set = dataset.get_whole_val_set(opt.random)
-            print('===> Evaluating on val set')
+            if opt.dataset.lower() == 'pittsburgh':
+                whole_test_set = dataset.get_whole_val_set(opt.random)
+                print('===> Evaluating on val set')
+            elif opt.dataset.lower() == 'kitti': # TODO
+                whole_test_set = dataset.get_kitti_dataset(opt.random)
+                print('===> Evaluating on kitti dataset')
         else:
             raise ValueError('Unknown dataset split: ' + opt.split)
         print('====> Query count:', whole_test_set.dbStruct.numQ)
     elif opt.mode.lower() == 'cluster':
         whole_train_set = dataset.get_whole_training_set(onlyDB=True)
-    elif opt.mode.lower() == 'kitti': # TODO
-        whole_test_set = dataset.get_kitti_dataset(opt.random)
-        print('===> Evaluating on kitti dataset')
 
     print('===> Building model')
 
@@ -554,13 +555,14 @@ if __name__ == "__main__":
             print("=> no checkpoint found at '{}'".format(resume_ckpt))
 
     if opt.mode.lower() == 'test':
-        print('===> Running evaluation step')
-        epoch = 1
-        recalls = test(whole_test_set, epoch, write_tboard=False)
-    elif opt.mode.lower() == 'kitti': # TODO
-        print('===> Running evaluation step')
-        epoch = 1
-        recalls = kitti_test(whole_test_set, epoch, write_tboard=False)
+        if opt.dataset.lower() == 'pittsburgh':
+            print('===> Running evaluation step')
+            epoch = 1
+            recalls = test(whole_test_set, epoch, write_tboard=False)
+        elif opt.dataset.lower() == 'kitti':
+            print('===> Running evaluation step')
+            epoch = 1
+            recalls = kitti_test(whole_test_set, epoch, write_tboard=False)
     elif opt.mode.lower() == 'cluster':
         print('===> Calculating descriptors and clusters')
         get_clusters(whole_train_set)
