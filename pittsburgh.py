@@ -109,26 +109,36 @@ def parse_dbStruct(path):
             posDistSqThr, nonTrivPosDistSqThr)
 
 class WholeDatasetFromStruct(data.Dataset):
-    def __init__(self, structFile, random_dataset, input_transform=None, onlyDB=False):
+    def __init__(self, structFile, extract_dataset, random_dataset, input_transform=None, onlyDB=False):
         super().__init__()
 
+        self.extract_dataset = extract_dataset
         self.random_dataset = random_dataset
         self.input_transform = input_transform
 
         self.dbStruct = parse_dbStruct(structFile)
-        if self.random_dataset: # TODO
-            print('===> Randomizing pittsburgh dataset')
-            self.db_dataset = len(self.dbStruct.dbImage)
-            self.q_dataset = len(self.dbStruct.qImage)
+        self.db_dataset = len(self.dbStruct.dbImage)
+        self.q_dataset = len(self.dbStruct.qImage)
 
+        if self.extract_dataset: # TODO
+            num_of_query = 5 # TODO
+            self.extracted_db_idx, self.extracted_q_idx = self.extract_partial_dataset(num_of_query)
+
+        elif self.random_dataset: # TODO
+            print('===> Randomizing pittsburgh dataset')
             self.rand_db_idx = random.sample(range(self.db_dataset), self.db_dataset)
             self.rand_q_idx = random.sample(range(self.q_dataset), self.q_dataset)
 
         self.db_images = [join(root_dir, dbIm) for dbIm in self.dbStruct.dbImage]
         self.q_images = [join(queries_dir, qIm) for qIm in self.dbStruct.qImage]
-        if self.random_dataset:
+       
+        if self.extract_dataset:
             self.db_images = [self.db_images[i] for i in self.rand_db_idx]
             self.q_images = [self.q_images[i] for i in self.rand_q_idx]
+        elif self.random_dataset:
+            self.db_images = [self.db_images[i] for i in self.extracted_db_idx]
+            self.q_images = [self.q_images[i] for i in self.extracted_q_idx]
+        
         self.images = self.db_images + self.q_images
 
         self.whichSet = self.dbStruct.whichSet
@@ -136,6 +146,9 @@ class WholeDatasetFromStruct(data.Dataset):
 
         self.positives = None
         self.distances = None
+
+        self.selected_db = None
+        self.selected_q = None
 
     def __getitem__(self, index):
         img = Image.open(self.images[index])
@@ -167,6 +180,29 @@ class WholeDatasetFromStruct(data.Dataset):
 
         return self.positives
     
+    def extract_partial_dataset(self, num_of_query):
+        knn = NearestNeighbors(n_jobs=-1)
+        knn.fit(self.dbStruct.utmDb)
+
+        selected_q_idx = random.sample(range(self.q_dataset), num_of_query) # TODO        
+        #self.selected_q = self.dbStruct.utmQ[:num_of_query]
+        self.selected_q = self.dbStruct.utmQ[selected_q_idx]
+
+        self.distances, self.positives = knn.radius_neighbors(self.selected_q,
+                radius=self.dbStruct.posDistThr)
+
+        self.selected_db = self.positives
+
+        selected_db_idx = None
+        for db in self.selected_db:
+            if selected_db_idx is None:
+                selected_db_idx = db
+            else:
+                selected_db_idx = np.hstack((selected_db_idx, db))
+        selected_db_idx = np.unique(selected_db_idx)
+
+        return selected_db_idx, selected_q_idx
+    
 class PittsDatasetLseg(data.Dataset):
     def __init__(self, structFile, random_dataset, input_transform=None, onlyDB=False):
         super().__init__()
@@ -175,12 +211,11 @@ class PittsDatasetLseg(data.Dataset):
         self.input_transform = input_transform
 
         self.dbStruct = parse_dbStruct(structFile)
+        self.db_dataset = len(self.dbStruct.dbImage)
+        self.q_dataset = len(self.dbStruct.qImage)
 
         if self.random_dataset: # TODO
             print('===> Randomizing pittsburgh dataset')
-            self.db_dataset = len(self.dbStruct.dbImage)
-            self.q_dataset = len(self.dbStruct.qImage)
-
             self.rand_db_idx = random.sample(range(self.db_dataset), self.db_dataset)
             self.rand_q_idx = random.sample(range(self.q_dataset), self.q_dataset)
 

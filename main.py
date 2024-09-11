@@ -74,6 +74,7 @@ parser.add_argument('--split', type=str, default='val', help='Data split to use 
         choices=['test', 'test250k', 'train', 'val'])
 parser.add_argument('--fromscratch', action='store_true', help='Train from scratch rather than using pretrained models')
 parser.add_argument('--random', type=bool, default=False, help='Randomize dataset for test')
+parser.add_argument('--extract_dataset', type=bool, default=False, help='Extract partial dataset from whole dataset')
 
 def train(epoch):
     epoch_loss = 0
@@ -419,7 +420,7 @@ if __name__ == "__main__":
         train_set = dataset.get_training_query_set(opt.margin)
 
         print('====> Training query set:', len(train_set))
-        whole_test_set = dataset.get_whole_val_set(opt.random)
+        whole_test_set = dataset.get_whole_val_set(opt.extract_dataset, opt.random)
         print('===> Evaluating on val set, query count:', whole_test_set.dbStruct.numQ)
     elif opt.mode.lower() == 'test':
         if opt.split.lower() == 'test':
@@ -433,7 +434,7 @@ if __name__ == "__main__":
             print('===> Evaluating on train set')
         elif opt.split.lower() == 'val':
             if opt.dataset.lower() == 'pittsburgh':
-                whole_test_set = dataset.get_whole_val_set(opt.random)
+                whole_test_set = dataset.get_whole_val_set(opt.extract_dataset, opt.random)
                 print('===> Evaluating on val set')
             elif opt.dataset.lower() == 'kitti': # TODO
                 whole_test_set = dataset.get_kitti_dataset(opt.random)
