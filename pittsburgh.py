@@ -72,9 +72,9 @@ def get_250k_val_query_set():
     return QueryDatasetFromStruct(structFile,
                              input_transform=input_transform())
 
-def get_pitts_dataset_lseg(random_dataset):
+def get_pitts_dataset_lseg(extract_dataset, random_dataset):
     structFile = join(struct_dir, 'pitts30k_val.mat')
-    return PittsDatasetLseg(structFile, random_dataset,
+    return PittsDatasetLseg(structFile, extract_dataset, random_dataset,
                              input_transform=input_transform())
 
 dbStruct = namedtuple('dbStruct', ['whichSet', 'dataset', 
@@ -214,9 +214,10 @@ class WholeDatasetFromStruct(data.Dataset):
         return selected_db_idx, selected_q_idx
     
 class PittsDatasetLseg(data.Dataset):
-    def __init__(self, structFile, random_dataset, input_transform=None, onlyDB=False):
+    def __init__(self, structFile, extract_dataset, random_dataset, input_transform=None, onlyDB=False):
         super().__init__()
 
+        self.extract_dataset = extract_dataset
         self.random_dataset = random_dataset
         self.input_transform = input_transform
 
@@ -338,8 +339,8 @@ class PittsDatasetLseg(data.Dataset):
         return selected_db_idx, selected_q_idx
     
     def calculate_recall(self, dbFeat, encoder_dim=10):
-        qFeat = dbFeat[self.dbStruct.numDb:].astype('float32') # TODO
-        dbFeat = dbFeat[:self.dbStruct.numDb].astype('float32')
+        qFeat = dbFeat[self.numDb:].astype('float32') # TODO
+        dbFeat = dbFeat[:self.numDb].astype('float32')
         
         print('====> Building faiss index')
         faiss_index = faiss.IndexFlatL2(encoder_dim)
@@ -359,7 +360,7 @@ class PittsDatasetLseg(data.Dataset):
                     correct_at_n[i:] += 1
                     break
                 
-        recall_at_n = correct_at_n / self.dbStruct.numQ
+        recall_at_n = correct_at_n / self.numQ
         print(recall_at_n)
         
 def collate_fn(batch):
