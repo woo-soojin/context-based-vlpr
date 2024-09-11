@@ -36,15 +36,16 @@ def get_kitti_dataset(random_dataset): # TODO
     return KittiDatasetNetVLAD(image_path, gt_path, random_dataset,
                              input_transform=input_transform())
 
-def get_kitti_dataset_lseg(): # TODO
+def get_kitti_dataset_lseg(random_dataset): # TODO
     image_path = join(root_dir, 'kitti/00/image_2') # TODO
     gt_path = join(root_dir, 'kitti/00') # TODO
-    return KittiDatasetLseg(image_path, gt_path)
+    return KittiDatasetLseg(image_path, gt_path, random_dataset)
 
 class KittiDatasetLseg(data.Dataset):
-    def __init__(self, image_path, gt_path, input_transform=None, onlyDB=False): # TODO
+    def __init__(self, image_path, gt_path, random_dataset, input_transform=None, onlyDB=False): # TODO
         super().__init__()
 
+        self.random_dataset = random_dataset
         self.input_transform = input_transform
 
         self.whole_image = sorted(os.listdir(image_path))
@@ -68,13 +69,13 @@ class KittiDatasetLseg(data.Dataset):
         self.numDb = int(len(self.images)/2) # TODO
         self.numQ = len(self.images) - self.numDb
 
-        # if self.random_dataset:
-        print('===> Randomizing kitti dataset')
-        self.total_dataset = len(self.images)
-        self.randIdx = random.sample(range(self.total_dataset), self.total_dataset)
+        if self.random_dataset:
+            print('===> Randomizing kitti dataset')
+            self.total_dataset = len(self.images)
+            self.randIdx = random.sample(range(self.total_dataset), self.total_dataset)
 
-        self.images = [self.images[i] for i in self.randIdx]
-        self.utm_coord = [self.utm_coord[i] for i in self.randIdx]
+            self.images = [self.images[i] for i in self.randIdx]
+            self.utm_coord = [self.utm_coord[i] for i in self.randIdx]
 
     def __getitem__(self, index):
         bgr = cv2.imread(self.images[index])
