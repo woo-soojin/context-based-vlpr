@@ -11,6 +11,7 @@ from PIL import Image
 
 from sklearn.neighbors import NearestNeighbors
 import h5py
+import random
 
 root_dir = '/home/soojinwoo/pittsburgh'
 if not exists(root_dir):
