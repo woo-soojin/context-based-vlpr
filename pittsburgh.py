@@ -224,15 +224,26 @@ class PittsDatasetLseg(data.Dataset):
         self.db_dataset = len(self.dbStruct.dbImage)
         self.q_dataset = len(self.dbStruct.qImage)
 
-        if self.random_dataset: # TODO
+        if self.extract_dataset: # TODO
+            print('===> Extracting partial pittsburgh dataset') # TODO
+            num_of_query = 5 # TODO
+            self.extracted_db_idx, self.extracted_q_idx = self.extract_partial_dataset(num_of_query)
+            self.numDb = self.extracted_db_idx.shape[0]
+            self.numQ = num_of_query
+        elif self.random_dataset: # TODO
             print('===> Randomizing pittsburgh dataset')
             random.seed(time.time())
             self.rand_db_idx = random.sample(range(self.db_dataset), self.db_dataset)
             self.rand_q_idx = random.sample(range(self.q_dataset), self.q_dataset)
+            self.numDb = len(self.rand_db_idx)
+            self.numQ = len(self.rand_q_idx)
 
         self.db_images = [join(root_dir, dbIm) for dbIm in self.dbStruct.dbImage]
         self.q_images = [join(queries_dir, qIm) for qIm in self.dbStruct.qImage]
-        if self.random_dataset:
+        if self.extract_dataset:
+            self.db_images = [self.db_images[i] for i in self.extracted_db_idx]
+            self.q_images = [self.q_images[i] for i in self.extracted_q_idx]
+        elif self.random_dataset:
             self.db_images = [self.db_images[i] for i in self.rand_db_idx]
             self.q_images = [self.q_images[i] for i in self.rand_q_idx]
         self.images = self.db_images + self.q_images
@@ -283,7 +294,10 @@ class PittsDatasetLseg(data.Dataset):
     def getPositives(self):
         # positives for evaluation are those within trivial threshold range
         #fit NN to find them, search by radius
-        if self.random_dataset:
+        if self.extract_dataset:
+            self.utmDb = [self.dbStruct.utmDb[i] for i in self.extracted_db_idx]
+            self.utmQ = [self.dbStruct.utmQ[i] for i in  self.extracted_q_idx]
+        elif self.random_dataset:
             self.utmDb = [self.dbStruct.utmDb[i] for i in self.rand_db_idx]
             self.utmQ = [self.dbStruct.utmQ[i] for i in self.rand_q_idx]
         else:
@@ -298,6 +312,30 @@ class PittsDatasetLseg(data.Dataset):
                     radius=self.dbStruct.posDistThr)
 
         return self.positives
+    
+    def extract_partial_dataset(self, num_of_query):
+        knn = NearestNeighbors(n_jobs=-1)
+        knn.fit(self.dbStruct.utmDb)
+
+        random.seed(time.time())
+        selected_q_idx = random.sample(range(self.q_dataset), num_of_query) # TODO        
+        #self.selected_q = self.dbStruct.utmQ[:num_of_query]
+        self.selected_q = self.dbStruct.utmQ[selected_q_idx]
+
+        self.distances, self.positives = knn.radius_neighbors(self.selected_q,
+                radius=self.dbStruct.posDistThr)
+
+        self.selected_db = self.positives
+
+        selected_db_idx = None
+        for db in self.selected_db:
+            if selected_db_idx is None:
+                selected_db_idx = db
+            else:
+                selected_db_idx = np.hstack((selected_db_idx, db))
+        selected_db_idx = np.unique(selected_db_idx)
+
+        return selected_db_idx, selected_q_idx
     
     def calculate_recall(self, dbFeat, encoder_dim=10):
         qFeat = dbFeat[self.dbStruct.numDb:].astype('float32') # TODO

@@ -28,8 +28,6 @@ from scipy.io import loadmat
 import os
 from torchvision import transforms
 
-total_n = 17608
-
 parser = argparse.ArgumentParser(description='pytorch-NetVlad')
 parser.add_argument('--mode', type=str, default='train', help='Mode', choices=['train', 'test', 'cluster']) # TODO
 parser.add_argument('--batchSize', type=int, default=4, 
@@ -437,7 +435,7 @@ if __name__ == "__main__":
                 whole_test_set = dataset.get_whole_val_set(opt.extract_dataset, opt.random)
                 print('===> Evaluating on val set')
             elif opt.dataset.lower() == 'kitti': # TODO
-                whole_test_set = dataset.get_kitti_dataset(opt.random)
+                whole_test_set = dataset.get_kitti_dataset(opt.extract_dataset, opt.random)
                 print('===> Evaluating on kitti dataset')
         else:
             raise ValueError('Unknown dataset split: ' + opt.split)
