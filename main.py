@@ -419,7 +419,7 @@ if __name__ == "__main__":
         train_set = dataset.get_training_query_set(opt.margin)
 
         print('====> Training query set:', len(train_set))
-        whole_test_set = dataset.get_whole_val_set()
+        whole_test_set = dataset.get_whole_val_set(opt.random)
         print('===> Evaluating on val set, query count:', whole_test_set.dbStruct.numQ)
     elif opt.mode.lower() == 'test':
         if opt.split.lower() == 'test':
@@ -432,7 +432,7 @@ if __name__ == "__main__":
             whole_test_set = dataset.get_whole_training_set()
             print('===> Evaluating on train set')
         elif opt.split.lower() == 'val':
-            whole_test_set = dataset.get_whole_val_set()
+            whole_test_set = dataset.get_whole_val_set(opt.random)
             print('===> Evaluating on val set')
         else:
             raise ValueError('Unknown dataset split: ' + opt.split)
