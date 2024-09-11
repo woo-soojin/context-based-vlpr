@@ -224,6 +224,15 @@ class PittsDatasetLseg(data.Dataset):
         hist, _ = np.histogram(index,bins=range(codebook.shape[0] + 1), density=True)
         
         return hist
+    
+    def bag_of_words_wo_predified_codebook(self, descriptor, num_cluster=100): # TODO # cluster
+        kmeans = KMeans(num_cluster, n_init=10)
+        kmeans.fit(descriptor)
+
+        codebook = kmeans.predict(descriptor)
+        bow_histogram = np.bincount(codebook, minlength=kmeans.n_clusters)
+
+        return bow_histogram
 
     def getPositives(self):
         # positives for evaluation are those within trivial threshold range

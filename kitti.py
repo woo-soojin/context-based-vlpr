@@ -135,11 +135,11 @@ class KittiDatasetLseg(data.Dataset):
         
         return hist
     
-    def bag_of_words_wo_predified_codebook(self, descriptors, num_cluster=100): # TODO # cluster
+    def bag_of_words_wo_predified_codebook(self, descriptor, num_cluster=100): # TODO # cluster
         kmeans = KMeans(num_cluster, n_init=10)
-        kmeans.fit(descriptors)
+        kmeans.fit(descriptor)
 
-        codebook = kmeans.predict(descriptors)
+        codebook = kmeans.predict(descriptor)
         bow_histogram = np.bincount(codebook, minlength=kmeans.n_clusters)
 
         return bow_histogram
