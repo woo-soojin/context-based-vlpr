@@ -32,9 +32,9 @@ def get_whole_training_set(onlyDB=False):
                              input_transform=input_transform(),
                              onlyDB=onlyDB)
 
-def get_whole_val_set():
+def get_whole_val_set(random_dataset):
     structFile = join(struct_dir, 'pitts30k_val.mat')
-    return WholeDatasetFromStruct(structFile,
+    return WholeDatasetFromStruct(structFile, random_dataset,
                              input_transform=input_transform())
 
 def get_250k_val_set():
@@ -99,15 +99,27 @@ def parse_dbStruct(path):
             posDistSqThr, nonTrivPosDistSqThr)
 
 class WholeDatasetFromStruct(data.Dataset):
-    def __init__(self, structFile, input_transform=None, onlyDB=False):
+    def __init__(self, structFile, random_dataset, input_transform=None, onlyDB=False):
         super().__init__()
 
+        self.random_dataset = random_dataset
         self.input_transform = input_transform
 
         self.dbStruct = parse_dbStruct(structFile)
-        self.images = [join(root_dir, dbIm) for dbIm in self.dbStruct.dbImage]
-        if not onlyDB:
-            self.images += [join(queries_dir, qIm) for qIm in self.dbStruct.qImage]
+        if self.random_dataset: # TODO
+            print('===> Randomizing pittsburgh dataset')
+            self.db_dataset = len(self.dbStruct.dbImage)
+            self.q_dataset = len(self.dbStruct.qImage)
+
+            self.rand_db_idx = random.sample(range(self.db_dataset), self.db_dataset)
+            self.rand_q_idx = random.sample(range(self.q_dataset), self.q_dataset)
+
+        self.db_images = [join(root_dir, dbIm) for dbIm in self.dbStruct.dbImage]
+        self.q_images = [join(queries_dir, qIm) for qIm in self.dbStruct.qImage]
+        if self.random_dataset:
+            self.db_images = [self.db_images[i] for i in self.rand_db_idx]
+            self.q_images = [self.q_images[i] for i in self.rand_q_idx]
+        self.images = self.db_images + self.q_images
 
         self.whichSet = self.dbStruct.whichSet
         self.dataset = self.dbStruct.dataset
@@ -129,11 +141,18 @@ class WholeDatasetFromStruct(data.Dataset):
     def getPositives(self):
         # positives for evaluation are those within trivial threshold range
         #fit NN to find them, search by radius
+        if self.random_dataset:
+            self.utmDb = [self.dbStruct.utmDb[i] for i in self.rand_db_idx]
+            self.utmQ = [self.dbStruct.utmQ[i] for i in self.rand_q_idx]
+        else:
+            self.utmDb = self.dbStruct.utmDb
+            self.utmQ = self.dbStruct.utmQ
+
         if  self.positives is None:
             knn = NearestNeighbors(n_jobs=-1)
-            knn.fit(self.dbStruct.utmDb)
+            knn.fit(self.utmDb)
 
-            self.distances, self.positives = knn.radius_neighbors(self.dbStruct.utmQ,
+            self.distances, self.positives = knn.radius_neighbors(self.utmQ,
                     radius=self.dbStruct.posDistThr)
 
         return self.positives
