@@ -28,10 +28,8 @@ from scipy.io import loadmat
 import os
 from torchvision import transforms
 
-total_n = 17608
-
 parser = argparse.ArgumentParser(description='pytorch-NetVlad')
-parser.add_argument('--mode', type=str, default='train', help='Mode', choices=['train', 'test', 'cluster', 'kitti']) # TODO
+parser.add_argument('--mode', type=str, default='train', help='Mode', choices=['train', 'test', 'cluster']) # TODO
 parser.add_argument('--batchSize', type=int, default=4, 
         help='Number of triplets (query, pos, negs). Each triplet consists of 12 images.')
 parser.add_argument('--cacheBatchSize', type=int, default=24, help='Batch size for caching and testing')
@@ -74,6 +72,7 @@ parser.add_argument('--split', type=str, default='val', help='Data split to use 
         choices=['test', 'test250k', 'train', 'val'])
 parser.add_argument('--fromscratch', action='store_true', help='Train from scratch rather than using pretrained models')
 parser.add_argument('--random', type=bool, default=False, help='Randomize dataset for test')
+parser.add_argument('--extract_dataset', type=bool, default=False, help='Extract partial dataset from whole dataset') # TODO
 
 def train(epoch):
     epoch_loss = 0
@@ -202,8 +201,8 @@ def test(eval_set, epoch=0, write_tboard=False):
     del test_data_loader
 
     # extracted for both db and query, now split in own sets
-    qFeat = dbFeat[eval_set.dbStruct.numDb:].astype('float32')
-    dbFeat = dbFeat[:eval_set.dbStruct.numDb].astype('float32')
+    qFeat = dbFeat[eval_set.numDb:].astype('float32')
+    dbFeat = dbFeat[:eval_set.numDb].astype('float32')
     
     print('====> Building faiss index')
     faiss_index = faiss.IndexFlatL2(pool_size)
@@ -225,7 +224,7 @@ def test(eval_set, epoch=0, write_tboard=False):
             if np.any(np.in1d(pred[:n], gt[qIx])):
                 correct_at_n[i:] += 1
                 break
-    recall_at_n = correct_at_n / eval_set.dbStruct.numQ
+    recall_at_n = correct_at_n / eval_set.numQ
 
     recalls = {} #make dict for output
     for i,n in enumerate(n_values):
@@ -419,7 +418,7 @@ if __name__ == "__main__":
         train_set = dataset.get_training_query_set(opt.margin)
 
         print('====> Training query set:', len(train_set))
-        whole_test_set = dataset.get_whole_val_set()
+        whole_test_set = dataset.get_whole_val_set(opt.extract_dataset, opt.random)
         print('===> Evaluating on val set, query count:', whole_test_set.dbStruct.numQ)
     elif opt.mode.lower() == 'test':
         if opt.split.lower() == 'test':
@@ -432,16 +431,17 @@ if __name__ == "__main__":
             whole_test_set = dataset.get_whole_training_set()
             print('===> Evaluating on train set')
         elif opt.split.lower() == 'val':
-            whole_test_set = dataset.get_whole_val_set()
-            print('===> Evaluating on val set')
+            if opt.dataset.lower() == 'pittsburgh':
+                whole_test_set = dataset.get_whole_val_set(opt.extract_dataset, opt.random)
+                print('===> Evaluating on val set')
+            elif opt.dataset.lower() == 'kitti': # TODO
+                whole_test_set = dataset.get_kitti_dataset(opt.extract_dataset, opt.random)
+                print('===> Evaluating on kitti dataset')
         else:
             raise ValueError('Unknown dataset split: ' + opt.split)
-        print('====> Query count:', whole_test_set.dbStruct.numQ)
+        # print('====> Query count:', whole_test_set.dbStruct.numQ)
     elif opt.mode.lower() == 'cluster':
         whole_train_set = dataset.get_whole_training_set(onlyDB=True)
-    elif opt.mode.lower() == 'kitti': # TODO
-        whole_test_set = dataset.get_kitti_dataset(opt.random)
-        print('===> Evaluating on kitti dataset')
 
     print('===> Building model')
 
@@ -554,13 +554,14 @@ if __name__ == "__main__":
             print("=> no checkpoint found at '{}'".format(resume_ckpt))
 
     if opt.mode.lower() == 'test':
-        print('===> Running evaluation step')
-        epoch = 1
-        recalls = test(whole_test_set, epoch, write_tboard=False)
-    elif opt.mode.lower() == 'kitti': # TODO
-        print('===> Running evaluation step')
-        epoch = 1
-        recalls = kitti_test(whole_test_set, epoch, write_tboard=False)
+        if opt.dataset.lower() == 'pittsburgh':
+            print('===> Running evaluation step')
+            epoch = 1
+            recalls = test(whole_test_set, epoch, write_tboard=False)
+        elif opt.dataset.lower() == 'kitti':
+            print('===> Running evaluation step')
+            epoch = 1
+            recalls = kitti_test(whole_test_set, epoch, write_tboard=False)
     elif opt.mode.lower() == 'cluster':
         print('===> Calculating descriptors and clusters')
         get_clusters(whole_train_set)

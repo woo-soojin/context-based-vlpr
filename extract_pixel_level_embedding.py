@@ -24,7 +24,8 @@ from torch.utils.data import DataLoader
 
 #dir = "/media/aril/DATA/git/lseg_ws/src/vlmaps/data/vlmaps"
 # dir = "/home/soojinwoo/git/lseg_ws/src/vlmaps/data" # TODO
-dir = "/home/soojinwoo/git/lseg_ws/data"
+# dir = "/home/soojinwoo/git/lseg_ws/data"
+dir = "./data"
 
 def parse_configs():
     abs_path = os.path.dirname(os.path.abspath(__file__)) 
@@ -38,8 +39,10 @@ def parse_configs():
     parser.add_argument('--rot_ro_cam', nargs='+', action='append', default=[[0, 0, 1],[-1, 0, 0],[0, -1, 0]], help='camera rotation matrix')
     parser.add_argument('--save_pcd', type=bool, default=False, help='the flag to decide whether to save the accumulated point cloud or not')
     parser.add_argument('--dataset', type=str, default='pittsburgh', help='Dataset to use', choices=['pittsburgh', 'kitti'])
+    parser.add_argument('--random', type=bool, default=False, help='Randomize dataset for test')
     parser.add_argument('--build_codebook', type=bool, default=False, help='the flag to build codebook')
     parser.add_argument('--use_codebook', type=bool, default=False, help='the flag to use predefined codebook')
+    parser.add_argument('--extract_dataset', type=bool, default=False, help='Extract partial dataset from whole dataset') # TODO
     
     args = parser.parse_args()
 
@@ -176,11 +179,11 @@ def create_lseg_map_batch(pretrained_path, img_save_dir, camera_height, init_tf,
     # TODO
     if configs.dataset.lower() == 'pittsburgh':
         import pittsburgh as dataset
-        whole_test_set = dataset.get_pitts_dataset_lseg() # TODO
+        whole_test_set = dataset.get_pitts_dataset_lseg(configs.extract_dataset, configs.random) # TODO
         print('Dataset: Pittsburgh')
     elif configs.dataset.lower() == 'kitti':
         import kitti as dataset
-        whole_test_set = dataset.get_kitti_dataset_lseg()
+        whole_test_set = dataset.get_kitti_dataset_lseg(configs.random)
         print('Dataset: Kitti')
     else:
         raise Exception('Unknown dataset')

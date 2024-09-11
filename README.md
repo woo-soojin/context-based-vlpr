@@ -18,6 +18,7 @@ ${ROOT}
           └── 00/
                └── image_2/
                └── poses.txt
+     └── pittsburgh/             
 └── lseg/
      └── codebook.npy
      └── text_embedding.npy
@@ -28,13 +29,19 @@ ${ROOT}
 
 ## Evaluation
 ### NetVLAD
-#### pittsburgh Dataset
+#### Pittsburgh Dataset
+- `dataset`: Dataset to use. (default: `pittsburgh`, options: `pittsburgh`, `kitti`)
+- `random`: Randomize dataset for test. (default: `False`)
+- `extract_dataset`: Extract partial dataset from whole dataset. (default: `False`)
+
 ```bash
 python main.py --mode=test --resume=<path to checkpoint> --dataset=pittsburgh
 ```
 
 #### KITTI Dataset
-- Used image_2 for the test.
+- Use image_2 for the test.
+- `dataset`: Dataset to use. (default: `pittsburgh`, options: `pittsburgh`, `kitti`)
+- `random`: Randomize dataset for test. (default: `False`)
 
 ```bash
 python main.py --mode=kitti --resume=<path to checkpoint> --dataset=kitti
@@ -51,6 +58,8 @@ python build_text_embedding.py
 #### KITTI Dataset
 - `dataset`: Dataset to use. (default: `pittsburgh`, options: `pittsburgh`, `kitti`)
 - `build_codebook`: If `True`, generate codebook for BoW. If `False` calculate recall for query images. (default: `False`)
+- `random`: Randomize dataset for test. (default: `False`)
+- `extract_dataset`: Extract partial dataset from whole dataset. (default: `False`)
 
 ```bash
 cd <path to repository>

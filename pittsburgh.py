@@ -12,7 +12,13 @@ from PIL import Image
 from sklearn.neighbors import NearestNeighbors
 import h5py
 
-root_dir = '/home/soojinwoo/pittsburgh'
+import random
+import faiss
+import scipy.cluster.vq as vq
+from sklearn.cluster import KMeans
+import time
+
+root_dir = './data/pittsburgh'
 if not exists(root_dir):
     raise FileNotFoundError('root_dir is hardcoded, please adjust to point to Pittsburth dataset')
 
@@ -32,9 +38,9 @@ def get_whole_training_set(onlyDB=False):
                              input_transform=input_transform(),
                              onlyDB=onlyDB)
 
-def get_whole_val_set():
+def get_whole_val_set(extract_dataset, random_dataset):
     structFile = join(struct_dir, 'pitts30k_val.mat')
-    return WholeDatasetFromStruct(structFile,
+    return WholeDatasetFromStruct(structFile, extract_dataset, random_dataset,
                              input_transform=input_transform())
 
 def get_250k_val_set():
@@ -64,6 +70,11 @@ def get_val_query_set():
 def get_250k_val_query_set():
     structFile = join(struct_dir, 'pitts250k_val.mat')
     return QueryDatasetFromStruct(structFile,
+                             input_transform=input_transform())
+
+def get_pitts_dataset_lseg(extract_dataset, random_dataset):
+    structFile = join(struct_dir, 'pitts30k_val.mat')
+    return PittsDatasetLseg(structFile, extract_dataset, random_dataset,
                              input_transform=input_transform())
 
 dbStruct = namedtuple('dbStruct', ['whichSet', 'dataset', 
@@ -99,15 +110,144 @@ def parse_dbStruct(path):
             posDistSqThr, nonTrivPosDistSqThr)
 
 class WholeDatasetFromStruct(data.Dataset):
-    def __init__(self, structFile, input_transform=None, onlyDB=False):
+    def __init__(self, structFile, extract_dataset, random_dataset, input_transform=None, onlyDB=False):
         super().__init__()
 
+        self.extract_dataset = extract_dataset
+        self.random_dataset = random_dataset
         self.input_transform = input_transform
 
         self.dbStruct = parse_dbStruct(structFile)
-        self.images = [join(root_dir, dbIm) for dbIm in self.dbStruct.dbImage]
-        if not onlyDB:
-            self.images += [join(queries_dir, qIm) for qIm in self.dbStruct.qImage]
+        self.db_dataset = len(self.dbStruct.dbImage)
+        self.q_dataset = len(self.dbStruct.qImage)
+
+        if self.extract_dataset: # TODO
+            print('===> Extracting partial pittsburgh dataset') # TODO
+            num_of_query = 300 # TODO
+            self.extracted_db_idx, self.extracted_q_idx = self.extract_partial_dataset(num_of_query)
+            self.numDb = self.extracted_db_idx.shape[0]
+            self.numQ = num_of_query
+        elif self.random_dataset: # TODO
+            print('===> Randomizing pittsburgh dataset') # TODO
+            random.seed(time.time())
+            self.rand_db_idx = random.sample(range(self.db_dataset), self.db_dataset)
+            self.rand_q_idx = random.sample(range(self.q_dataset), self.q_dataset)
+            self.numDb = len(self.rand_db_idx)
+            self.numQ = len(self.rand_q_idx)
+
+        self.db_images = [join(root_dir, dbIm) for dbIm in self.dbStruct.dbImage]
+        self.q_images = [join(queries_dir, qIm) for qIm in self.dbStruct.qImage]
+       
+        if self.extract_dataset:
+            self.db_images = [self.db_images[i] for i in self.extracted_db_idx]
+            self.q_images = [self.q_images[i] for i in self.extracted_q_idx]
+        elif self.random_dataset:
+            self.db_images = [self.db_images[i] for i in self.rand_db_idx]
+            self.q_images = [self.q_images[i] for i in self.rand_q_idx]
+        
+        self.images = self.db_images + self.q_images
+
+        self.whichSet = self.dbStruct.whichSet
+        self.dataset = self.dbStruct.dataset
+
+        self.positives = None
+        self.distances = None
+
+        self.selected_db = None
+        self.selected_q = None
+
+    def __getitem__(self, index):
+        img = Image.open(self.images[index])
+
+        if self.input_transform:
+            img = self.input_transform(img)
+
+        return img, index
+
+    def __len__(self):
+        return len(self.images)
+
+    def getPositives(self):
+        # positives for evaluation are those within trivial threshold range
+        #fit NN to find them, search by radius
+        if self.extract_dataset:
+            self.utmDb = [self.dbStruct.utmDb[i] for i in self.extracted_db_idx]
+            self.utmQ = [self.dbStruct.utmQ[i] for i in  self.extracted_q_idx]
+        elif self.random_dataset:
+            self.utmDb = [self.dbStruct.utmDb[i] for i in self.rand_db_idx]
+            self.utmQ = [self.dbStruct.utmQ[i] for i in self.rand_q_idx]
+        else:
+            self.utmDb = self.dbStruct.utmDb
+            self.utmQ = self.dbStruct.utmQ
+
+        if  self.positives is None:
+            knn = NearestNeighbors(n_jobs=-1)
+            knn.fit(self.utmDb)
+
+            self.distances, self.positives = knn.radius_neighbors(self.utmQ,
+                    radius=self.dbStruct.posDistThr)
+
+        return self.positives
+    
+    def extract_partial_dataset(self, num_of_query):
+        knn = NearestNeighbors(n_jobs=-1)
+        knn.fit(self.dbStruct.utmDb)
+
+        random.seed(time.time())
+        selected_q_idx = random.sample(range(self.q_dataset), num_of_query) # TODO        
+        #self.selected_q = self.dbStruct.utmQ[:num_of_query]
+        self.selected_q = self.dbStruct.utmQ[selected_q_idx]
+
+        self.distances, self.positives = knn.radius_neighbors(self.selected_q,
+                radius=self.dbStruct.posDistThr)
+
+        self.selected_db = self.positives
+
+        selected_db_idx = None
+        for db in self.selected_db:
+            if selected_db_idx is None:
+                selected_db_idx = db
+            else:
+                selected_db_idx = np.hstack((selected_db_idx, db))
+        selected_db_idx = np.unique(selected_db_idx)
+
+        return selected_db_idx, selected_q_idx
+    
+class PittsDatasetLseg(data.Dataset):
+    def __init__(self, structFile, extract_dataset, random_dataset, input_transform=None, onlyDB=False):
+        super().__init__()
+
+        self.extract_dataset = extract_dataset
+        self.random_dataset = random_dataset
+        self.input_transform = input_transform
+
+        self.dbStruct = parse_dbStruct(structFile)
+        self.db_dataset = len(self.dbStruct.dbImage)
+        self.q_dataset = len(self.dbStruct.qImage)
+
+        if self.extract_dataset: # TODO
+            print('===> Extracting partial pittsburgh dataset') # TODO
+            num_of_query = 300 # TODO
+            self.extracted_db_idx, self.extracted_q_idx = self.extract_partial_dataset(num_of_query)
+            self.numDb = self.extracted_db_idx.shape[0]
+            self.numQ = num_of_query
+        elif self.random_dataset: # TODO
+            print('===> Randomizing pittsburgh dataset')
+            random.seed(time.time())
+            self.rand_db_idx = random.sample(range(self.db_dataset), self.db_dataset)
+            self.rand_q_idx = random.sample(range(self.q_dataset), self.q_dataset)
+            self.numDb = len(self.rand_db_idx)
+            self.numQ = len(self.rand_q_idx)
+
+        self.db_images = [join(root_dir, dbIm) for dbIm in self.dbStruct.dbImage]
+        self.q_images = [join(queries_dir, qIm) for qIm in self.dbStruct.qImage]
+        if self.extract_dataset:
+            self.db_images = [self.db_images[i] for i in self.extracted_db_idx]
+            self.q_images = [self.q_images[i] for i in self.extracted_q_idx]
+        elif self.random_dataset:
+            self.db_images = [self.db_images[i] for i in self.rand_db_idx]
+            self.q_images = [self.q_images[i] for i in self.rand_q_idx]
+        self.images = self.db_images + self.q_images
 
         self.whichSet = self.dbStruct.whichSet
         self.dataset = self.dbStruct.dataset
@@ -125,18 +265,107 @@ class WholeDatasetFromStruct(data.Dataset):
 
     def __len__(self):
         return len(self.images)
+    
+    def build_codebook(self, X, voc_size=10): # TODO voc_size 10
+        n, desc, dim = X.shape
+        X = X.reshape(n*desc, dim)
+        
+        kmeans = KMeans(n_clusters= voc_size, n_init=10)
+        kmeans.fit(X)
+        pred = kmeans.cluster_centers_
+        
+        return pred
+    
+    def bag_of_words(self, descriptor, codebook):
+        descriptor=descriptor.tolist()
+        index = vq.vq(descriptor,codebook)
+        hist, _ = np.histogram(index,bins=range(codebook.shape[0] + 1), density=True)
+        
+        return hist
+    
+    def bag_of_words_wo_predified_codebook(self, descriptor, num_cluster=100): # TODO # cluster
+        kmeans = KMeans(num_cluster, n_init=10)
+        kmeans.fit(descriptor)
+
+        codebook = kmeans.predict(descriptor)
+        bow_histogram = np.bincount(codebook, minlength=kmeans.n_clusters)
+
+        return bow_histogram
 
     def getPositives(self):
         # positives for evaluation are those within trivial threshold range
         #fit NN to find them, search by radius
+        if self.extract_dataset:
+            self.utmDb = [self.dbStruct.utmDb[i] for i in self.extracted_db_idx]
+            self.utmQ = [self.dbStruct.utmQ[i] for i in  self.extracted_q_idx]
+        elif self.random_dataset:
+            self.utmDb = [self.dbStruct.utmDb[i] for i in self.rand_db_idx]
+            self.utmQ = [self.dbStruct.utmQ[i] for i in self.rand_q_idx]
+        else:
+            self.utmDb = self.dbStruct.utmDb
+            self.utmQ = self.dbStruct.utmQ
+
         if  self.positives is None:
             knn = NearestNeighbors(n_jobs=-1)
-            knn.fit(self.dbStruct.utmDb)
+            knn.fit(self.utmDb)
 
-            self.distances, self.positives = knn.radius_neighbors(self.dbStruct.utmQ,
+            self.distances, self.positives = knn.radius_neighbors(self.utmQ,
                     radius=self.dbStruct.posDistThr)
 
         return self.positives
+    
+    def extract_partial_dataset(self, num_of_query):
+        knn = NearestNeighbors(n_jobs=-1)
+        knn.fit(self.dbStruct.utmDb)
+
+        random.seed(time.time())
+        selected_q_idx = random.sample(range(self.q_dataset), num_of_query) # TODO        
+        #self.selected_q = self.dbStruct.utmQ[:num_of_query]
+        self.selected_q = self.dbStruct.utmQ[selected_q_idx]
+
+        self.distances, self.positives = knn.radius_neighbors(self.selected_q,
+                radius=self.dbStruct.posDistThr)
+
+        self.selected_db = self.positives
+
+        selected_db_idx = None
+        for db in self.selected_db:
+            if selected_db_idx is None:
+                selected_db_idx = db
+            else:
+                selected_db_idx = np.hstack((selected_db_idx, db))
+        selected_db_idx = np.unique(selected_db_idx)
+
+        return selected_db_idx, selected_q_idx
+    
+    def calculate_recall(self, dbFeat, encoder_dim=10):
+        qFeat = dbFeat[self.numDb:].astype('float32') # TODO
+        dbFeat = dbFeat[:self.numDb].astype('float32')
+        
+        print('====> Building faiss index')
+        faiss_index = faiss.IndexFlatL2(encoder_dim)
+        faiss_index.add(dbFeat)
+
+        print('====> Calculating recall @ N')
+        n_values = [1,5,10,20]
+
+        _, predictions = faiss_index.search(qFeat, max(n_values)) 
+        gt = self.getPositives() 
+
+        # for each query get those within threshold distance
+        correct_at_n = np.zeros(len(n_values))
+        for qIx, pred in enumerate(predictions):
+            for i,n in enumerate(n_values):
+                if np.any(np.in1d(pred[:n], gt[qIx])):
+                    correct_at_n[i:] += 1
+                    break
+                
+        recall_at_n = correct_at_n / self.numQ
+        
+        recalls = {} #make dict for output
+        for i,n in enumerate(n_values):
+            recalls[n] = recall_at_n[i]
+            print("====> Recall@{}: {:.4f}".format(n, recall_at_n[i]))
         
 def collate_fn(batch):
     """Creates mini-batch tensors from the list of tuples (query, positive, negatives).
