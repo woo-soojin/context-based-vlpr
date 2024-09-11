@@ -56,6 +56,7 @@ python build_text_embedding.py
 #### KITTI Dataset
 - `dataset`: Dataset to use. (default: `pittsburgh`, options: `pittsburgh`, `kitti`)
 - `build_codebook`: If `True`, generate codebook for BoW. If `False` calculate recall for query images. (default: `False`)
+- `random`: Randomize dataset for test. (default: `False`)
 
 ```bash
 cd <path to repository>
