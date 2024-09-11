@@ -440,7 +440,7 @@ if __name__ == "__main__":
                 print('===> Evaluating on kitti dataset')
         else:
             raise ValueError('Unknown dataset split: ' + opt.split)
-        print('====> Query count:', whole_test_set.dbStruct.numQ)
+        # print('====> Query count:', whole_test_set.dbStruct.numQ)
     elif opt.mode.lower() == 'cluster':
         whole_train_set = dataset.get_whole_training_set(onlyDB=True)
 
