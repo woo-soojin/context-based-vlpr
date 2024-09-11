@@ -18,6 +18,7 @@ ${ROOT}
           └── 00/
                └── image_2/
                └── poses.txt
+     └── pittsburgh/             
 └── lseg/
      └── codebook.npy
      └── text_embedding.npy
