@@ -24,7 +24,8 @@ from torch.utils.data import DataLoader
 
 #dir = "/media/aril/DATA/git/lseg_ws/src/vlmaps/data/vlmaps"
 # dir = "/home/soojinwoo/git/lseg_ws/src/vlmaps/data" # TODO
-dir = "/home/soojinwoo/git/lseg_ws/data"
+# dir = "/home/soojinwoo/git/lseg_ws/data"
+dir = "./data"
 
 def parse_configs():
     abs_path = os.path.dirname(os.path.abspath(__file__)) 
@@ -181,7 +182,7 @@ def create_lseg_map_batch(pretrained_path, img_save_dir, camera_height, init_tf,
         print('Dataset: Pittsburgh')
     elif configs.dataset.lower() == 'kitti':
         import kitti as dataset
-        whole_test_set = dataset.get_kitti_dataset_lseg()
+        whole_test_set = dataset.get_kitti_dataset_lseg(configs.random)
         print('Dataset: Kitti')
     else:
         raise Exception('Unknown dataset')
