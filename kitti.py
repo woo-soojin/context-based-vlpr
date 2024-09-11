@@ -72,6 +72,7 @@ class KittiDatasetLseg(data.Dataset):
         if self.random_dataset:
             print('===> Randomizing kitti dataset')
             self.total_dataset = len(self.images)
+            random.seed(time.time())
             self.randIdx = random.sample(range(self.total_dataset), self.total_dataset)
 
             self.images = [self.images[i] for i in self.randIdx]
@@ -207,9 +208,8 @@ class KittiDatasetNetVLAD(data.Dataset):
 
         if self.random_dataset:
             print('===> Randomizing kitti dataset')
-            random.seed(time.time())
-
             self.total_dataset = len(self.images)
+            random.seed(time.time())
             self.randIdx = random.sample(range(self.total_dataset), self.total_dataset)
 
             self.images = [self.images[i] for i in self.randIdx]

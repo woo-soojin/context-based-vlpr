@@ -16,6 +16,7 @@ import random
 import faiss
 import scipy.cluster.vq as vq
 from sklearn.cluster import KMeans
+import time
 
 root_dir = './data/pittsburgh'
 if not exists(root_dir):
@@ -37,9 +38,9 @@ def get_whole_training_set(onlyDB=False):
                              input_transform=input_transform(),
                              onlyDB=onlyDB)
 
-def get_whole_val_set(random_dataset):
+def get_whole_val_set(extract_dataset, random_dataset):
     structFile = join(struct_dir, 'pitts30k_val.mat')
-    return WholeDatasetFromStruct(structFile, random_dataset,
+    return WholeDatasetFromStruct(structFile, extract_dataset, random_dataset,
                              input_transform=input_transform())
 
 def get_250k_val_set():
@@ -121,23 +122,28 @@ class WholeDatasetFromStruct(data.Dataset):
         self.q_dataset = len(self.dbStruct.qImage)
 
         if self.extract_dataset: # TODO
+            print('===> Extracting partial pittsburgh dataset') # TODO
             num_of_query = 5 # TODO
             self.extracted_db_idx, self.extracted_q_idx = self.extract_partial_dataset(num_of_query)
-
+            self.numDb = self.extracted_db_idx.shape[0]
+            self.numQ = num_of_query
         elif self.random_dataset: # TODO
-            print('===> Randomizing pittsburgh dataset')
+            print('===> Randomizing pittsburgh dataset') # TODO
+            random.seed(time.time())
             self.rand_db_idx = random.sample(range(self.db_dataset), self.db_dataset)
             self.rand_q_idx = random.sample(range(self.q_dataset), self.q_dataset)
+            self.numDb = len(self.rand_db_idx)
+            self.numQ = len(self.rand_q_idx)
 
         self.db_images = [join(root_dir, dbIm) for dbIm in self.dbStruct.dbImage]
         self.q_images = [join(queries_dir, qIm) for qIm in self.dbStruct.qImage]
        
         if self.extract_dataset:
-            self.db_images = [self.db_images[i] for i in self.rand_db_idx]
-            self.q_images = [self.q_images[i] for i in self.rand_q_idx]
-        elif self.random_dataset:
             self.db_images = [self.db_images[i] for i in self.extracted_db_idx]
             self.q_images = [self.q_images[i] for i in self.extracted_q_idx]
+        elif self.random_dataset:
+            self.db_images = [self.db_images[i] for i in self.rand_db_idx]
+            self.q_images = [self.q_images[i] for i in self.rand_q_idx]
         
         self.images = self.db_images + self.q_images
 
@@ -164,7 +170,10 @@ class WholeDatasetFromStruct(data.Dataset):
     def getPositives(self):
         # positives for evaluation are those within trivial threshold range
         #fit NN to find them, search by radius
-        if self.random_dataset:
+        if self.extract_dataset:
+            self.utmDb = [self.dbStruct.utmDb[i] for i in self.extracted_db_idx]
+            self.utmQ = [self.dbStruct.utmQ[i] for i in  self.extracted_q_idx]
+        elif self.random_dataset:
             self.utmDb = [self.dbStruct.utmDb[i] for i in self.rand_db_idx]
             self.utmQ = [self.dbStruct.utmQ[i] for i in self.rand_q_idx]
         else:
@@ -184,6 +193,7 @@ class WholeDatasetFromStruct(data.Dataset):
         knn = NearestNeighbors(n_jobs=-1)
         knn.fit(self.dbStruct.utmDb)
 
+        random.seed(time.time())
         selected_q_idx = random.sample(range(self.q_dataset), num_of_query) # TODO        
         #self.selected_q = self.dbStruct.utmQ[:num_of_query]
         self.selected_q = self.dbStruct.utmQ[selected_q_idx]
@@ -216,6 +226,7 @@ class PittsDatasetLseg(data.Dataset):
 
         if self.random_dataset: # TODO
             print('===> Randomizing pittsburgh dataset')
+            random.seed(time.time())
             self.rand_db_idx = random.sample(range(self.db_dataset), self.db_dataset)
             self.rand_q_idx = random.sample(range(self.q_dataset), self.q_dataset)
 

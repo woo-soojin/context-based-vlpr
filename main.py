@@ -74,7 +74,7 @@ parser.add_argument('--split', type=str, default='val', help='Data split to use 
         choices=['test', 'test250k', 'train', 'val'])
 parser.add_argument('--fromscratch', action='store_true', help='Train from scratch rather than using pretrained models')
 parser.add_argument('--random', type=bool, default=False, help='Randomize dataset for test')
-parser.add_argument('--extract_dataset', type=bool, default=False, help='Extract partial dataset from whole dataset')
+parser.add_argument('--extract_dataset', type=int, default=False, help='Extract partial dataset from whole dataset') # TODO
 
 def train(epoch):
     epoch_loss = 0
@@ -203,8 +203,8 @@ def test(eval_set, epoch=0, write_tboard=False):
     del test_data_loader
 
     # extracted for both db and query, now split in own sets
-    qFeat = dbFeat[eval_set.dbStruct.numDb:].astype('float32')
-    dbFeat = dbFeat[:eval_set.dbStruct.numDb].astype('float32')
+    qFeat = dbFeat[eval_set.numDb:].astype('float32')
+    dbFeat = dbFeat[:eval_set.numDb].astype('float32')
     
     print('====> Building faiss index')
     faiss_index = faiss.IndexFlatL2(pool_size)
@@ -226,7 +226,7 @@ def test(eval_set, epoch=0, write_tboard=False):
             if np.any(np.in1d(pred[:n], gt[qIx])):
                 correct_at_n[i:] += 1
                 break
-    recall_at_n = correct_at_n / eval_set.dbStruct.numQ
+    recall_at_n = correct_at_n / eval_set.numQ
 
     recalls = {} #make dict for output
     for i,n in enumerate(n_values):
