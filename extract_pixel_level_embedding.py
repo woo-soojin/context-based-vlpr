@@ -42,6 +42,7 @@ def parse_configs():
     parser.add_argument('--random', type=bool, default=False, help='Randomize dataset for test')
     parser.add_argument('--build_codebook', type=bool, default=False, help='the flag to build codebook')
     parser.add_argument('--use_codebook', type=bool, default=False, help='the flag to use predefined codebook')
+    parser.add_argument('--extract_dataset', type=bool, default=False, help='Extract partial dataset from whole dataset') # TODO
     
     args = parser.parse_args()
 
@@ -178,7 +179,7 @@ def create_lseg_map_batch(pretrained_path, img_save_dir, camera_height, init_tf,
     # TODO
     if configs.dataset.lower() == 'pittsburgh':
         import pittsburgh as dataset
-        whole_test_set = dataset.get_pitts_dataset_lseg(configs.random) # TODO
+        whole_test_set = dataset.get_pitts_dataset_lseg(configs.extract_dataset, configs.random) # TODO
         print('Dataset: Pittsburgh')
     elif configs.dataset.lower() == 'kitti':
         import kitti as dataset

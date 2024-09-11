@@ -123,7 +123,7 @@ class WholeDatasetFromStruct(data.Dataset):
 
         if self.extract_dataset: # TODO
             print('===> Extracting partial pittsburgh dataset') # TODO
-            num_of_query = 5 # TODO
+            num_of_query = 300 # TODO
             self.extracted_db_idx, self.extracted_q_idx = self.extract_partial_dataset(num_of_query)
             self.numDb = self.extracted_db_idx.shape[0]
             self.numQ = num_of_query
@@ -227,7 +227,7 @@ class PittsDatasetLseg(data.Dataset):
 
         if self.extract_dataset: # TODO
             print('===> Extracting partial pittsburgh dataset') # TODO
-            num_of_query = 5 # TODO
+            num_of_query = 300 # TODO
             self.extracted_db_idx, self.extracted_q_idx = self.extract_partial_dataset(num_of_query)
             self.numDb = self.extracted_db_idx.shape[0]
             self.numQ = num_of_query
@@ -361,7 +361,11 @@ class PittsDatasetLseg(data.Dataset):
                     break
                 
         recall_at_n = correct_at_n / self.numQ
-        print(recall_at_n)
+        
+        recalls = {} #make dict for output
+        for i,n in enumerate(n_values):
+            recalls[n] = recall_at_n[i]
+            print("====> Recall@{}: {:.4f}".format(n, recall_at_n[i]))
         
 def collate_fn(batch):
     """Creates mini-batch tensors from the list of tuples (query, positive, negatives).

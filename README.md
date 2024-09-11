@@ -32,6 +32,7 @@ ${ROOT}
 #### Pittsburgh Dataset
 - `dataset`: Dataset to use. (default: `pittsburgh`, options: `pittsburgh`, `kitti`)
 - `random`: Randomize dataset for test. (default: `False`)
+- `extract_dataset`: Extract partial dataset from whole dataset. (default: `False`)
 
 ```bash
 python main.py --mode=test --resume=<path to checkpoint> --dataset=pittsburgh
@@ -58,6 +59,7 @@ python build_text_embedding.py
 - `dataset`: Dataset to use. (default: `pittsburgh`, options: `pittsburgh`, `kitti`)
 - `build_codebook`: If `True`, generate codebook for BoW. If `False` calculate recall for query images. (default: `False`)
 - `random`: Randomize dataset for test. (default: `False`)
+- `extract_dataset`: Extract partial dataset from whole dataset. (default: `False`)
 
 ```bash
 cd <path to repository>

@@ -72,7 +72,7 @@ parser.add_argument('--split', type=str, default='val', help='Data split to use 
         choices=['test', 'test250k', 'train', 'val'])
 parser.add_argument('--fromscratch', action='store_true', help='Train from scratch rather than using pretrained models')
 parser.add_argument('--random', type=bool, default=False, help='Randomize dataset for test')
-parser.add_argument('--extract_dataset', type=int, default=False, help='Extract partial dataset from whole dataset') # TODO
+parser.add_argument('--extract_dataset', type=bool, default=False, help='Extract partial dataset from whole dataset') # TODO
 
 def train(epoch):
     epoch_loss = 0
