@@ -28,13 +28,18 @@ ${ROOT}
 
 ## Evaluation
 ### NetVLAD
-#### pittsburgh Dataset
+#### Pittsburgh Dataset
+- `dataset`: Dataset to use. (default: `pittsburgh`, options: `pittsburgh`, `kitti`)
+- `random`: Randomize dataset for test. (default: `False`)
+
 ```bash
 python main.py --mode=test --resume=<path to checkpoint> --dataset=pittsburgh
 ```
 
 #### KITTI Dataset
-- Used image_2 for the test.
+- Use image_2 for the test.
+- `dataset`: Dataset to use. (default: `pittsburgh`, options: `pittsburgh`, `kitti`)
+- `random`: Randomize dataset for test. (default: `False`)
 
 ```bash
 python main.py --mode=kitti --resume=<path to checkpoint> --dataset=kitti
