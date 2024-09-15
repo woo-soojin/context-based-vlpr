@@ -1,4 +1,4 @@
-# context-based-visual-language-place-recognition
+# Context-based Visual Language Place Recognition
 
 ## Download Dataset
 - KITTI dataset </br>
