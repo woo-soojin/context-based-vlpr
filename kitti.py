@@ -30,10 +30,10 @@ def input_transform():
                                std=[0.229, 0.224, 0.225]),
     ])
 
-def get_kitti_dataset(random_dataset): # TODO
+def get_kitti_dataset(extract_dataset, random_dataset): # TODO
     image_path = join(root_dir, 'kitti/00/image_2') # TODO
     gt_path = join(root_dir, 'kitti/00') # TODO
-    return KittiDatasetNetVLAD(image_path, gt_path, random_dataset,
+    return KittiDatasetNetVLAD(image_path, gt_path, extract_dataset, random_dataset,
                              input_transform=input_transform())
 
 def get_kitti_dataset_lseg(random_dataset): # TODO
@@ -179,9 +179,10 @@ class KittiDatasetLseg(data.Dataset):
         return recalls
 
 class KittiDatasetNetVLAD(data.Dataset):
-    def __init__(self, image_path, gt_path, random_dataset, input_transform=None, onlyDB=False): # TODO
+    def __init__(self, image_path, gt_path, extract_dataset, random_dataset, input_transform=None, onlyDB=False): # TODO
         super().__init__()
 
+        self.extract_dataset = extract_dataset
         self.random_dataset = random_dataset
         self.input_transform = input_transform
 
