@@ -26,5 +26,5 @@ def build_text_embedding_vector(lang):
     np.save("{}/{}".format(path, file_name), text_feats)
 
 if __name__=="__main__":
-    lang = "ground, road, sidewalk, parking, structure, building, house, vehicle, car, truck, van, bicycle, motorcycle, nature, vegetation, trunk, terrain, tree, human, person, cyclist, bicyclist, motorcyclist, object, fence, pole, traffic, sign, sky, other" # TODO
+    lang = "ground, road, sidewalk, parking, structure, building, house, vehicle, car, truck, van, bicycle, motorcycle, nature, vegetation, trunk, terrain, tree, human, person, cyclist, bicyclist, motorcyclist, object, fence, pole, traffic sign, sky, other" # TODO
     build_text_embedding_vector(lang) # TODO input
