@@ -18,6 +18,8 @@ ${ROOT}
                └── image_2/
                └── poses.txt
      └── pittsburgh/             
+└── netvlad/
+     └── checkpoints/
 └── lseg/
      └── codebook.npy
      └── text_embedding.npy
