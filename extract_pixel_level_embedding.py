@@ -13,9 +13,6 @@ import scipy.cluster.vq as vq
 import faiss
 from tqdm import tqdm
 
-# upper_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# sys.path.append(upper_dir)
-
 from lseg.scripts.additional_utils.models import resize_image, pad_image, crop_image
 from lseg.scripts.modules.models.lseg_net import LSegEncNet
 
@@ -189,9 +186,6 @@ def create_lseg_map_batch(pretrained_path, img_save_dir, camera_height, init_tf,
     cacheBatchSize = 1
     cuda = True
     # TODO what if features dont fit in memory? 
-    # test_data_loader = DataLoader(dataset=eval_set, 
-    #             num_workers=opt.threads, batch_size=opt.cacheBatchSize, shuffle=False, 
-    #             pin_memory=cuda)
     test_data_loader = DataLoader(dataset=whole_test_set,
                 num_workers=threads, batch_size=cacheBatchSize, shuffle=False, 
                 pin_memory=cuda)
