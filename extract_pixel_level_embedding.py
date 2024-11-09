@@ -22,9 +22,6 @@ from lseg.scripts.modules.models.lseg_net import LSegEncNet
 import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
 
-#dir = "/media/aril/DATA/git/lseg_ws/src/vlmaps/data/vlmaps"
-# dir = "/home/soojinwoo/git/lseg_ws/src/vlmaps/data" # TODO
-# dir = "/home/soojinwoo/git/lseg_ws/data"
 dir = "./data"
 
 def parse_configs():
