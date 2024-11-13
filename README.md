@@ -91,7 +91,6 @@ python extract_pixel_level_embedding.py --dataset=kitti
 
 <img src="lseg/scripts/images/visualize_centroids.png" alt="centroids_visualization" width="500">
 
-</br>
 
 - `image_embedding_file`: Path to image embedding file
 - `text_embedding_file`: Path to text embedding file
