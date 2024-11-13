@@ -87,6 +87,12 @@ python extract_pixel_level_embedding.py --dataset=kitti
 ```
 
 #### Visualize Centroid of Cluster
+- Visualization of KITTI 00 Sequence (000001)
+
+<img src="lseg/scripts/images/visualize_centroids.png" alt="centroids_visualization" width="500">
+
+</br>
+
 - `image_embedding_file`: Path to image embedding file
 - `text_embedding_file`: Path to text embedding file
 - `dynamic_objects`: index of dynamic objects within text embedding
@@ -95,6 +101,3 @@ python extract_pixel_level_embedding.py --dataset=kitti
 python visualize_cluster_centroid.py.py
 # ex) python visualize_cluster_centroid.py.py --dynamic_objects 7 8
 ```
-- Visualization of KITTI 00 Sequence (000001)
-
-<img src="lseg/scripts/images/visualize_centroids.png" alt="centroids_visualization" width="500">
