@@ -37,7 +37,8 @@ def parse_configs():
     parser.add_argument('--build_codebook', type=bool, default=False, help='the flag to build codebook')
     parser.add_argument('--use_codebook', type=bool, default=False, help='the flag to use predefined codebook')
     parser.add_argument('--extract_dataset', type=bool, default=False, help='Extract partial dataset from whole dataset') # TODO
-    
+    parser.add_argument('--extract_context_graph', type=bool, default=False, help='Extract context graph embedding') # TODO
+
     args = parser.parse_args()
 
     return args
@@ -218,8 +219,12 @@ def create_lseg_map_batch(pretrained_path, img_save_dir, camera_height, init_tf,
         score = np.einsum('ijk,ai',pix_feats, text_embedding_vectors)
 
         predicts = np.argmax(score, axis=0)
-        mask = (predicts != 10) # others, TODO
-        #mask = (predicts != 0) & (predicts != 1) & (predicts != 2) # TODO
+        # mask = (predicts != 10) # others, TODO
+        # mask = (predicts != 0) & (predicts != 1) & (predicts != 2) # TODO
+        mask = np.ones_like(predicts, dtype=bool)
+        if len(configs.dynamic_objects) > 0: # filtering
+            for dynamic_object in configs.dynamic_objects:
+                mask &= (predicts != int(dynamic_object))
 
         filtered_feats = pix_feats[:,mask]
         np.random.shuffle(filtered_feats) # TODO
