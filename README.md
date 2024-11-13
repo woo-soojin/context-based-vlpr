@@ -89,7 +89,7 @@ python extract_pixel_level_embedding.py --dataset=kitti
 #### Visualize Centroid of Cluster
 - Visualization of KITTI 00 Sequence (000001)
 
-<img src="lseg/scripts/images/visualize_centroids.png" alt="centroids_visualization" width="500">
+<img src="lseg/scripts/images/visualize_centroids_kitti_001.png" alt="centroids_visualization" width="500">
 
 
 - `image_embedding_file`: Path to image embedding file
