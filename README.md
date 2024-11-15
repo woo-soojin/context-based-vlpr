@@ -99,6 +99,6 @@ python extract_pixel_level_embedding.py --dataset=kitti
 - `dynamic_objects`: index of dynamic objects within text embedding
 
 ```bash
-python visualize_cluster_centroid.py.py
-# ex) python visualize_cluster_centroid.py.py --dynamic_objects 7 8 9 10 11 1 18 19 20 21 22 28
+python visualize_cluster_centroid.py
+# ex) python visualize_cluster_centroid.py --dynamic_objects 7 8 9 10 11 1 18 19 20 21 22 28
 ```
