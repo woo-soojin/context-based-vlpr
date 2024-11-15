@@ -82,6 +82,7 @@ python extract_pixel_level_embedding.py --dataset=pittsburgh
 - `build_codebook`: If `True`, generate codebook for BoW. If `False` calculate recall for query images. (default: `False`)
 - `use_codebook`: If `True`, use predefined codebook. (default: `False`)
 - `extract_dataset`: Extract partial dataset from whole dataset. (default: `False`)
+- `save_log`: Save log messages (default: `False`)
 
 ```bash
 cd <path to repository>
