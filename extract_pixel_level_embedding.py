@@ -37,6 +37,7 @@ def parse_configs():
     parser.add_argument('--extract_dataset', type=bool, default=False, help='Extract partial dataset from whole dataset') # TODO
     parser.add_argument('--extract_context_graph', type=bool, default=False, help='Extract context graph embedding') # TODO
     parser.add_argument('--dynamic_objects', nargs='+', default=[], help='index of dynamic objects')
+    parser.add_argument('--save_log', type=bool, default=False, help='Save log messages')
 
     args = parser.parse_args()
 
@@ -177,7 +178,7 @@ def create_lseg_map_batch(pretrained_path, data_dir, camera_height, init_tf, rot
         print('Dataset: Pittsburgh')
     elif configs.dataset.lower() == 'kitti':
         import kitti as dataset
-        whole_test_set = dataset.get_kitti_dataset_lseg(configs.random)
+        whole_test_set = dataset.get_kitti_dataset_lseg(configs.random, configs.save_log)
         print('Dataset: Kitti')
     else:
         raise Exception('Unknown dataset')

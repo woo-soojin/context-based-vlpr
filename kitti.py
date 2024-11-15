@@ -36,16 +36,17 @@ def get_kitti_dataset(random_dataset): # TODO
     return KittiDatasetNetVLAD(image_path, gt_path, random_dataset,
                              input_transform=input_transform())
 
-def get_kitti_dataset_lseg(random_dataset): # TODO
+def get_kitti_dataset_lseg(random_dataset, save_log): # TODO
     image_path = join(root_dir, 'kitti/00/image_2') # TODO
     gt_path = join(root_dir, 'kitti/00') # TODO
-    return KittiDatasetLseg(image_path, gt_path, random_dataset)
+    return KittiDatasetLseg(image_path, gt_path, random_dataset, save_log)
 
 class KittiDatasetLseg(data.Dataset):
-    def __init__(self, image_path, gt_path, random_dataset, input_transform=None, onlyDB=False): # TODO
+    def __init__(self, image_path, gt_path, random_dataset, save_log, input_transform=None, onlyDB=False): # TODO
         super().__init__()
 
         self.random_dataset = random_dataset
+        self.save_log = save_log
         self.input_transform = input_transform
 
         self.whole_image = sorted(os.listdir(image_path))
@@ -167,14 +168,27 @@ class KittiDatasetLseg(data.Dataset):
                 if np.any(np.in1d(pred[:n], gt[qIx])):
                     correct_at_n[i:] += 1
                     break
-                
+        
+        if self.save_log:
+            log_messages = ""
+
         recall_at_n = correct_at_n / self.numQ
         print(recall_at_n)
+        if self.save_log:
+            log_messages += str(recall_at_n) + '\n'
 
         recalls = {} #make dict for output # TODO
         for i,n in enumerate(n_values):
             recalls[n] = recall_at_n[i]
-            print("====> Recall@{}: {:.4f}".format(n, recall_at_n[i]))
+            recall_result = "====> Recall@{}: {:.4f}".format(n, recall_at_n[i])
+            print(recall_result)
+            if self.save_log:
+                log_messages += recall_result + '\n'
+
+        if self.save_log:
+            log_file = "./data/logs.txt"  # TODO
+            with open(log_file, "w") as f:
+                f.write(log_messages)
 
         return recalls
 
