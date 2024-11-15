@@ -98,5 +98,5 @@ python extract_pixel_level_embedding.py --dataset=kitti
 
 ```bash
 python visualize_cluster_centroid.py.py
-# ex) python visualize_cluster_centroid.py.py --dynamic_objects 7 8
+# ex) python visualize_cluster_centroid.py.py --dynamic_objects 7 8 9 10 11 1 18 19 20 21 22 28
 ```
