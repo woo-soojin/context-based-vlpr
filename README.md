@@ -69,10 +69,13 @@ python build_text_embedding.py
 - `build_codebook`: If `True`, generate codebook for BoW. If `False` calculate recall for query images. (default: `False`)
 - `use_codebook`: If `True`, use predefined codebook. (default: `False`)
 - `extract_dataset`: Extract partial dataset from whole dataset. (default: `False`)
+- `dynamic_objects`: Index of dynamic objects within text embedding
+- `save_log`: Save log messages (default: `False`)
 
 ```bash
 cd <path to repository>
 python extract_pixel_level_embedding.py --dataset=pittsburgh
+# ex) python extract_pixel_level_embedding.py --dataset=pittsburgh --dynamic_objects 7 8 9 10 11 1 18 19 20 21 22 28
 ```
 
 #### KITTI Dataset
@@ -82,11 +85,13 @@ python extract_pixel_level_embedding.py --dataset=pittsburgh
 - `build_codebook`: If `True`, generate codebook for BoW. If `False` calculate recall for query images. (default: `False`)
 - `use_codebook`: If `True`, use predefined codebook. (default: `False`)
 - `extract_dataset`: Extract partial dataset from whole dataset. (default: `False`)
+- `dynamic_objects`: Index of dynamic objects within text embedding
 - `save_log`: Save log messages (default: `False`)
 
 ```bash
 cd <path to repository>
 python extract_pixel_level_embedding.py --dataset=kitti
+# ex) python extract_pixel_level_embedding.py --dataset=kitti --dynamic_objects 7 8 9 10 11 12 18 19 20 21 22 28
 ```
 
 #### Visualize Centroid of Cluster
@@ -97,9 +102,9 @@ python extract_pixel_level_embedding.py --dataset=kitti
 
 - `image_embedding_file`: Path to image embedding file
 - `text_embedding_file`: Path to text embedding file
-- `dynamic_objects`: index of dynamic objects within text embedding
+- `dynamic_objects`: Index of dynamic objects within text embedding
 
 ```bash
 python visualize_cluster_centroid.py
-# ex) python visualize_cluster_centroid.py --dynamic_objects 7 8 9 10 11 1 18 19 20 21 22 28
+# ex) python visualize_cluster_centroid.py --dynamic_objects 7 8 9 10 11 12 18 19 20 21 22 28
 ```
