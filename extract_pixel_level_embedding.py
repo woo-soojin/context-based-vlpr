@@ -19,8 +19,6 @@ from lseg.scripts.modules.models.lseg_net import LSegEncNet
 import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
 
-dir = "./data"
-
 def parse_configs():
     abs_path = os.path.dirname(os.path.abspath(__file__)) 
     ckpt_path = abs_path + "/lseg/scripts/checkpoints/demo_e200.ckpt"
@@ -38,6 +36,7 @@ def parse_configs():
     parser.add_argument('--use_codebook', type=bool, default=False, help='the flag to use predefined codebook')
     parser.add_argument('--extract_dataset', type=bool, default=False, help='Extract partial dataset from whole dataset') # TODO
     parser.add_argument('--extract_context_graph', type=bool, default=False, help='Extract context graph embedding') # TODO
+    parser.add_argument('--dynamic_objects', nargs='+', default=[], help='index of dynamic objects')
 
     args = parser.parse_args()
 
@@ -128,7 +127,7 @@ def get_lseg_feat(model: LSegEncNet, image: np.array, labels, transform, crop_si
 
     return outputs
 
-def create_lseg_map_batch(pretrained_path, img_save_dir, camera_height, init_tf, rot_ro_cam, cs=0.05, gs=1000, 
+def create_lseg_map_batch(pretrained_path, data_dir, camera_height, init_tf, rot_ro_cam, cs=0.05, gs=1000, 
                           crop_size = 480, base_size = 520, lang = "door,chair,ground,ceiling,other",
                           clip_version = "ViT-B/32", mask_version=1):
 
@@ -195,11 +194,11 @@ def create_lseg_map_batch(pretrained_path, img_save_dir, camera_height, init_tf,
     print("codebook builder" if configs.build_codebook else "recall calculator")
 
     encoder_dim = 10 # TODO
-    text_embedding_vectors = np.load("{}/{}".format(dir, "text_embedding.npy")) # TODO
+    text_embedding_vectors = np.load("{}/{}".format(data_dir, "text_embedding.npy")) # TODO
     if configs.build_codebook: # TODO
         total_descriptors = np.empty((len(whole_test_set), 1000, 512)) # TODO size
     elif configs.use_codebook:
-        codebook = np.load("{}/{}".format(dir, "codebook.npy"))
+        codebook = np.load("{}/{}".format(data_dir, "codebook.npy"))
         encoder_dim = 10 # TODO
         dbFeat = np.empty((len(whole_test_set), encoder_dim))
     elif not configs.use_codebook:
@@ -243,14 +242,14 @@ def create_lseg_map_batch(pretrained_path, img_save_dir, camera_height, init_tf,
     if configs.build_codebook:
         print('====> Building Codebook')
         codebook = whole_test_set.build_codebook(total_descriptors)
-        np.save("{}/{}".format(dir, "codebook.npy"), codebook) # TODO
+        np.save("{}/{}".format(data_dir, "codebook.npy"), codebook) # TODO
     else:
         whole_test_set.calculate_recall(dbFeat)
            
 if __name__ == "__main__":
     configs = parse_configs()
 
-    img_save_dir = configs.data_path
+    data_dir = configs.data_path
     pretrained_path = configs.pretrained_path
 
     init_tf = np.array(configs.init_tf)
@@ -260,4 +259,4 @@ if __name__ == "__main__":
 
     camera_height = 1.2 # TODO
     map_resolution = 0.05  # TODO
-    create_lseg_map_batch(pretrained_path, img_save_dir, camera_height, init_tf, rot_ro_cam, cs=map_resolution, gs=1000, mask_version=configs.mask_version)
+    create_lseg_map_batch(pretrained_path, data_dir, camera_height, init_tf, rot_ro_cam, cs=map_resolution, gs=1000, mask_version=configs.mask_version)

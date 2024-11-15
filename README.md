@@ -63,6 +63,7 @@ python build_text_embedding.py
 ```
 
 #### Pittsburgh Dataset
+- `data_path`: Path to data. (default: `./data`)
 - `dataset`: Dataset to use. (default: `pittsburgh`, options: `pittsburgh`, `kitti`)
 - `random`: Randomize dataset for test. (default: `False`)
 - `build_codebook`: If `True`, generate codebook for BoW. If `False` calculate recall for query images. (default: `False`)
@@ -75,6 +76,7 @@ python extract_pixel_level_embedding.py --dataset=pittsburgh
 ```
 
 #### KITTI Dataset
+- `data_path`: Path to data. (default: `./data`)
 - `dataset`: Dataset to use. (default: `pittsburgh`, options: `pittsburgh`, `kitti`)
 - `random`: Randomize dataset for test. (default: `False`)
 - `build_codebook`: If `True`, generate codebook for BoW. If `False` calculate recall for query images. (default: `False`)
