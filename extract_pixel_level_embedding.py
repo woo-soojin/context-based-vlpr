@@ -12,6 +12,7 @@ import yaml
 import scipy.cluster.vq as vq
 import faiss
 from tqdm import tqdm
+from scipy import ndimage
 
 from lseg.scripts.additional_utils.models import resize_image, pad_image, crop_image
 from lseg.scripts.modules.models.lseg_net import LSegEncNet
@@ -219,17 +220,53 @@ def create_lseg_map_batch(pretrained_path, data_dir, camera_height, init_tf, rot
         score = np.einsum('ijk,ai',pix_feats, text_embedding_vectors)
 
         predicts = np.argmax(score, axis=0)
-        # mask = (predicts != 10) # others, TODO
-        # mask = (predicts != 0) & (predicts != 1) & (predicts != 2) # TODO
-        mask = np.ones_like(predicts, dtype=bool)
-        if len(configs.dynamic_objects) > 0: # filtering
-            for dynamic_object in configs.dynamic_objects:
-                mask &= (predicts != int(dynamic_object))
+        
+        # sampling
+        unique_values = np.unique(predicts)
 
-        filtered_feats = pix_feats[:,mask]
-        np.random.shuffle(filtered_feats) # TODO
-        fixed_feats = filtered_feats[:, :1000]
-        query_descriptor = fixed_feats.T
+        selected_points = []
+        filtered_embedding = []
+        for value in unique_values:
+            if len(configs.dynamic_objects) > 0:
+                if str(value) in configs.dynamic_objects: # omit dynamic objects
+                    continue
+
+            mask = (predicts == value)
+            
+            # check connected values
+            structure = np.ones((3, 3)) # eight directions
+            labeled_array, num_features = ndimage.label(mask, structure=structure)
+            
+            # find centroid of cluster
+            if configs.extract_context_graph:
+                for i in range(1, num_features + 1):
+                    centroid = ndimage.center_of_mass(mask, labeled_array, i)
+                    selected_points.append(centroid)
+
+                    centroid_y, centroid_x = int(centroid[0]), int(centroid[1]) # (y, x)
+                    centroid_embedding = pix_feats[:, centroid_y, centroid_x]
+
+                    filtered_embedding.append(centroid_embedding)
+            
+            # find random points in cluster
+            else:
+                n = 10 # TODO
+                for i in range(1, num_features + 1):
+                    cluster_indices = np.argwhere(labeled_array == i)
+                    num_points = min(n, len(cluster_indices))
+
+                    random_indices = np.random.choice(len(cluster_indices), size=num_points, replace=False)
+                    random_points = cluster_indices[random_indices]
+                    selected_points.extend(random_points)
+
+        # append random points
+        if not configs.extract_context_graph:
+            for point in selected_points:
+                centroid_y, centroid_x = point # (y, x)
+                centroid_embedding = pix_feats[:, centroid_y, centroid_x]
+                filtered_embedding.append(centroid_embedding)
+
+        query_descriptor = np.array(filtered_embedding)
 
         if configs.build_codebook:
             total_descriptors[indices,:,:] = query_descriptor
