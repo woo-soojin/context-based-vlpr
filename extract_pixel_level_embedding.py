@@ -243,7 +243,7 @@ def create_lseg_map_batch(pretrained_path, data_dir, camera_height, init_tf, rot
                     centroid = ndimage.center_of_mass(mask, labeled_array, i)
                     selected_points.append(centroid)
 
-                    centroid_y, centroid_x = int(centroid[0]), int(centroid[1])  # Assuming the centroid is in (y, x) format
+                    centroid_y, centroid_x = int(centroid[0]), int(centroid[1]) # (y, x)
                     centroid_embedding = pix_feats[:, centroid_y, centroid_x]
 
                     filtered_embedding.append(centroid_embedding)
@@ -254,8 +254,6 @@ def create_lseg_map_batch(pretrained_path, data_dir, camera_height, init_tf, rot
                 for i in range(1, num_features + 1):
                     cluster_indices = np.argwhere(labeled_array == i)
                     num_points = min(n, len(cluster_indices))
-                    # if num_points == 0:
-                    #     continue
 
                     random_indices = np.random.choice(len(cluster_indices), size=num_points, replace=False)
                     random_points = cluster_indices[random_indices]
@@ -264,7 +262,7 @@ def create_lseg_map_batch(pretrained_path, data_dir, camera_height, init_tf, rot
         # append random points
         if not configs.extract_context_graph:
             for point in selected_points:
-                centroid_y, centroid_x = point  # Extract (y, x) coordinates
+                centroid_y, centroid_x = point # (y, x)
                 centroid_embedding = pix_feats[:, centroid_y, centroid_x]
                 filtered_embedding.append(centroid_embedding)
 
