@@ -55,7 +55,7 @@ class KittiDatasetLseg(data.Dataset):
         # ground truth
         self.gt_pose_path = join(gt_path, 'poses.txt')
         with open(self.gt_pose_path, 'r') as poses:
-            self.utm_coord = [[float(pose.split()[3]), float(pose.split()[7])] for pose in poses]
+            self.utm_coord = [[float(pose.split()[3]), float(pose.split()[7]), float(pose.split()[11])] for pose in poses]
 
         # if not onlyDB: # TODO
         #     self.images += [join(queries_dir, qIm) for qIm in self.dbStruct.qImage]
@@ -205,7 +205,7 @@ class KittiDatasetNetVLAD(data.Dataset):
         # ground truth
         self.gt_pose_path = join(gt_path, 'poses.txt')
         with open(self.gt_pose_path, 'r') as poses:
-            self.utm_coord = [[float(pose.split()[3]), float(pose.split()[7])] for pose in poses]
+            self.utm_coord = [[float(pose.split()[3]), float(pose.split()[7]), float(pose.split()[11])] for pose in poses]
         
         # if not onlyDB: # TODO
         #     self.images += [join(queries_dir, qIm) for qIm in self.dbStruct.qImage]
