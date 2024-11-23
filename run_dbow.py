@@ -6,6 +6,8 @@ from sklearn.cluster import KMeans
 from sklearn.neighbors import NearestNeighbors
 import faiss
 
+root_dir = './'
+
 class DBoW:
     def __init__(self, num_clusters=500):
         self.num_clusters = num_clusters
@@ -14,13 +16,13 @@ class DBoW:
         self.image_descriptors = list()
         self.image_histograms = list()
 
-        self.images = os.listdir('./')
+        self.images = os.listdir(root_dir)
         # self.images = self.images[:6]
         self.numDb = int(len(self.images)/2) # TODO
         self.numQ = len(self.images) - self.numDb
 
         # ground truth
-        self.gt_pose_path = join('../', 'poses_kitti.txt')
+        self.gt_pose_path = join(root_dir, 'poses_kitti.txt')
         with open(self.gt_pose_path, 'r') as poses:
             self.utm_coord = [[float(pose.split()[3]), float(pose.split()[7]), float(pose.split()[11])] for pose in poses]
 
