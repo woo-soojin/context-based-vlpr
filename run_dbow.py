@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
     for img_path in dbow.images:
         img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
-        _, descriptors = extract_orb_features(img, 1000) # TODO
+        _, descriptors = extract_orb_features(img) # TODO
         if descriptors is not None:
             print('each', descriptors.shape)
             dbow.image_descriptors.append(descriptors)
