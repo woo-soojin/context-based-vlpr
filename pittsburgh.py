@@ -340,7 +340,7 @@ class PittsDatasetLseg(data.Dataset):
     
     def calculate_recall(self, dbFeat, encoder_dim=10):
         qFeat = dbFeat[self.dbStruct.numDb:].astype('float32') # TODO
-        dbFeat = dbFeat[:self.dbStruct.utmQnumDb].astype('float32')
+        dbFeat = dbFeat[:self.dbStruct.numDb].astype('float32')
         
         print('====> Building faiss index')
         faiss_index = faiss.IndexFlatL2(encoder_dim)
