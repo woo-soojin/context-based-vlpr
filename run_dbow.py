@@ -24,7 +24,7 @@ class DBoW:
         # ground truth
         self.gt_pose_path = join(root_dir, 'poses_kitti.txt')
         with open(self.gt_pose_path, 'r') as poses:
-            self.utm_coord = [[float(pose.split()[3]), float(pose.split()[7]), float(pose.split()[11])] for pose in poses]
+            self.utm_coord = [[float(pose.split()[3]), float(pose.split()[7])] for pose in poses]
 
     def build_vocabulary(self, descriptors_list):
         all_descriptors = np.vstack(descriptors_list)
