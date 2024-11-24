@@ -40,7 +40,7 @@ ${ROOT}
 - `extract_dataset`: Extract partial dataset from whole dataset. (default: `False`)
 
 ```bash
-python main.py --mode=test --resume=<path to checkpoint> --dataset=pittsburgh
+python run_netvlad.py --mode=test --resume=<path to checkpoint> --dataset=pittsburgh
 ```
 
 #### KITTI Dataset
@@ -51,7 +51,14 @@ python main.py --mode=test --resume=<path to checkpoint> --dataset=pittsburgh
 - `random`: Randomize dataset for test. (default: `False`)
 
 ```bash
-python main.py --mode=test --resume=<path to checkpoint> --dataset=kitti
+python run_netvlad.py --mode=test --resume=<path to checkpoint> --dataset=kitti
+```
+
+### DBoW
+#### KITTI Dataset
+
+```bash
+python run_dbow.py
 ```
 
 ### Our Method
@@ -74,8 +81,8 @@ python build_text_embedding.py
 
 ```bash
 cd <path to repository>
-python extract_pixel_level_embedding.py --dataset=pittsburgh
-# ex) python extract_pixel_level_embedding.py --dataset=pittsburgh --dynamic_objects 7 8 9 10 11 1 18 19 20 21 22 28
+python run_vlpr.py --dataset=pittsburgh
+# ex) python run_vlpr.py --dataset=pittsburgh --dynamic_objects 7 8 9 10 11 1 18 19 20 21 22 28
 ```
 
 #### KITTI Dataset
@@ -90,8 +97,8 @@ python extract_pixel_level_embedding.py --dataset=pittsburgh
 
 ```bash
 cd <path to repository>
-python extract_pixel_level_embedding.py --dataset=kitti
-# ex) python extract_pixel_level_embedding.py --dataset=kitti --dynamic_objects 7 8 9 10 11 12 18 19 20 21 22 28
+python run_vlpr.py --dataset=kitti
+# ex) python run_vlpr.py --dataset=kitti --dynamic_objects 7 8 9 10 11 12 18 19 20 21 22 28
 ```
 
 #### Visualize Centroid of Cluster
