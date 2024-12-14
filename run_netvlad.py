@@ -201,8 +201,12 @@ def test(eval_set, epoch=0, write_tboard=False):
     del test_data_loader
 
     # extracted for both db and query, now split in own sets
-    qFeat = dbFeat[eval_set.dbStruct.numDb:].astype('float32')
-    dbFeat = dbFeat[:eval_set.dbStruct.numDb].astype('float32')
+    if opt.extract_dataset or opt.random_dataset:
+        qFeat = dbFeat[eval_set.numDb:].astype('float32')
+        dbFeat = dbFeat[:eval_set.numDb].astype('float32')
+    else:
+        qFeat = dbFeat[eval_set.dbStruct.numDb:].astype('float32')
+        dbFeat = dbFeat[:eval_set.dbStruct.numDb].astype('float32')
     
     print('====> Building faiss index')
     faiss_index = faiss.IndexFlatL2(pool_size)
@@ -224,7 +228,11 @@ def test(eval_set, epoch=0, write_tboard=False):
             if np.any(np.in1d(pred[:n], gt[qIx])):
                 correct_at_n[i:] += 1
                 break
-    recall_at_n = correct_at_n / eval_set.dbStruct.numQ
+
+    if opt.extract_dataset or opt.random_dataset:
+        recall_at_n = correct_at_n / eval_set.numQ
+    else:
+        recall_at_n = correct_at_n / eval_set.dbStruct.numQ
 
     recalls = {} #make dict for output
     for i,n in enumerate(n_values):
