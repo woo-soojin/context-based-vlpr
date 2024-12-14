@@ -17,6 +17,8 @@ from scipy import ndimage
 from lseg.scripts.additional_utils.models import resize_image, pad_image, crop_image
 from lseg.scripts.modules.models.lseg_net import LSegEncNet
 
+from modules.context_graph import calculate_centroids, create_graph, calculate_graph_embedding
+
 import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
 
@@ -207,6 +209,11 @@ def create_lseg_map_batch(pretrained_path, data_dir, camera_height, init_tf, rot
         encoder_dim = 10 # TODO
         dbFeat = np.empty((len(whole_test_set), encoder_dim))
 
+    if configs.extract_context_graph:
+        total_graph = list()
+    elif configs.use_context_graph:
+        context_graph_embedding_vectors = np.load("{}/{}".format(data_dir, "context_graph_embeddings_64_wo_dynamic.npy")) # TODO
+
     for iteration, (input, indices) in enumerate(test_data_loader, 1):
         input = input.detach().cpu().numpy()
         input = np.squeeze(input)
@@ -218,64 +225,56 @@ def create_lseg_map_batch(pretrained_path, data_dir, camera_height, init_tf, rot
         pix_feats = np.squeeze(pix_feats)
 
         score = np.einsum('ijk,ai',pix_feats, text_embedding_vectors)
-
         predicts = np.argmax(score, axis=0)
         
-        # sampling
-        unique_values = np.unique(predicts)
+        if configs.extract_context_graph:
+            threshold = 70 # TODO
+            centroids = calculate_centroids(predicts)
+            graph, _ = create_graph(centroids, threshold)
+            total_graph.append(graph)
+        else:
+            # mask = (predicts != 10) # others, TODO
+            # mask = (predicts != 0) & (predicts != 1) & (predicts != 2) # TODO
+            mask = np.ones_like(predicts, dtype=bool)
+            if len(configs.dynamic_objects) > 0: # filtering
+                for dynamic_object in configs.dynamic_objects:
+                    mask &= (predicts != int(dynamic_object))
 
-        selected_points = []
-        filtered_embedding = []
-        for value in unique_values:
-            if len(configs.dynamic_objects) > 0:
-                if str(value) in configs.dynamic_objects: # omit dynamic objects
-                    continue
+            filtered_feats = pix_feats[:,mask]
+            np.random.shuffle(filtered_feats) # TODO
+            fixed_feats = filtered_feats[:, :1000]
+            query_descriptor = fixed_feats.T
 
-            mask = (predicts == value)
-            
-            # check connected values
-            structure = np.ones((3, 3)) # eight directions
-            labeled_array, num_features = ndimage.label(mask, structure=structure)
-            
-            # find centroid of cluster
-            if configs.extract_context_graph:
-                for i in range(1, num_features + 1):
-                    centroid = ndimage.center_of_mass(mask, labeled_array, i)
-                    selected_points.append(centroid)
+            if configs.build_codebook:
+                total_descriptors[indices,:,:] = query_descriptor
+            elif configs.use_codebook:
+                query_histogram = whole_test_set.bag_of_words(query_descriptor, codebook)
+                if configs.use_context_graph:
+                    context_graph_embedding = context_graph_embedding_vectors[indices]
+                    merged_embedding = np.hstack((query_histogram, context_graph_embedding))
+                    dbFeat[indices, :] = merged_embedding
+                else:
+                    dbFeat[indices, :] = query_histogram
 
-                    centroid_y, centroid_x = int(centroid[0]), int(centroid[1]) # (y, x)
-                    centroid_embedding = pix_feats[:, centroid_y, centroid_x]
-
-                    filtered_embedding.append(centroid_embedding)
-            
-            # find random points in cluster
-            else:
-                n = 10 # TODO
-                for i in range(1, num_features + 1):
-                    cluster_indices = np.argwhere(labeled_array == i)
-                    num_points = min(n, len(cluster_indices))
-
-                    random_indices = np.random.choice(len(cluster_indices), size=num_points, replace=False)
-                    random_points = cluster_indices[random_indices]
-                    selected_points.extend(random_points)
-
-        # append random points
-        if not configs.extract_context_graph:
-            for point in selected_points:
-                centroid_y, centroid_x = point # (y, x)
-                centroid_embedding = pix_feats[:, centroid_y, centroid_x]
-                filtered_embedding.append(centroid_embedding)
-
-        query_descriptor = np.array(filtered_embedding)
-
+            elif not configs.use_codebook:
+                query_histogram = whole_test_set.bag_of_words_wo_predified_codebook(query_descriptor, 10) # TODO 10
+                if configs.use_context_graph:
+                    context_graph_embedding = context_graph_embedding_vectors[indices]
+                    merged_embedding = np.hstack((query_histogram, context_graph_embedding))
+                    dbFeat[indices, :] = merged_embedding
+                else:
+                    dbFeat[indices, :] = query_histogram
+        
         if configs.build_codebook:
-            total_descriptors[indices,:,:] = query_descriptor
-        elif configs.use_codebook:
-            query_histogram = whole_test_set.bag_of_words(query_descriptor, codebook)
-            dbFeat[indices, :] = query_histogram
-        elif not configs.use_codebook:
-            query_histogram = whole_test_set.bag_of_words_wo_predified_codebook(query_descriptor, 10) # TODO 10
-            dbFeat[indices, :] = query_histogram
+            print('====> Building Codebook')
+            codebook = whole_test_set.build_codebook(total_descriptors)
+            np.save("{}/{}".format(data_dir, "codebook.npy"), codebook) # TODO
+        elif configs.extract_context_graph: # TODO
+            print('====> Building Context Graph Embeddings')
+            context_graph_embeddings = calculate_graph_embedding(total_graph)
+            np.save("{}/{}".format(data_dir, "context_graph_embeddings_64_wo_dynamic.npy"), context_graph_embeddings) # TODO
+        else:
+            whole_test_set.calculate_recall(dbFeat, encoder_dim)
 
     if configs.build_codebook:
         print('====> Building Codebook')
