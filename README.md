@@ -40,7 +40,7 @@ ${ROOT}
 - `extract_dataset`: Extract partial dataset from whole dataset. (default: `False`)
 
 ```bash
-python run_netvlad.py --mode=test --resume=./netvlad --dataset=pittsburgh
+python run_netvlad.py --split=val --mode=test --resume=./netvlad --dataset=pittsburgh
 ```
 
 #### KITTI Dataset
@@ -51,7 +51,7 @@ python run_netvlad.py --mode=test --resume=./netvlad --dataset=pittsburgh
 - `random`: Randomize dataset for test. (default: `False`)
 
 ```bash
-python run_netvlad.py --mode=test --resume=./netvlad --dataset=kitti
+python run_netvlad.py --split=val --mode=test --resume=./netvlad --dataset=kitti
 ```
 
 ### DBoW
