@@ -59,8 +59,6 @@ def get_descriptors(model, dataloader, device):
 
     return torch.cat(descriptors)
 
-from main import VPRModel
-
 def test():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
