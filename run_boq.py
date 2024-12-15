@@ -13,8 +13,10 @@ from dataloaders.boq.KittiDataset import KittiDataset
 
 def parse_configs():
     parser = argparse.ArgumentParser(description="config for BoQ")
-    parser.add_argument('--dataset', type=str, default='pittsburgh', help='Dataset to use', choices=['pittsburgh', 'kitti'])
     parser.add_argument('--batch_size', type=int, default=40, help='batch Size')
+    parser.add_argument('--dataset', type=str, default='pittsburgh', help='Dataset to use', choices=['pittsburgh', 'kitti'])
+    parser.add_argument('--split', type=str, default='val', help='Data split to use for testing. Default is val', 
+        choices=['test30k', 'test250k', 'train', 'val'])
 
     args = parser.parse_args()
 
@@ -64,6 +66,13 @@ def test():
 
     model = torch.hub.load("amaralibey/bag-of-queries", "get_trained_boq", backbone_name="resnet50", output_dim=16384)
     model = model.to(device)
+
+    if configs.split == 'test30k':
+        val_dataset_name = 'pitts30k_test'
+    elif configs.split == 'test250k':
+        val_dataset_name = 'pitts250k_test'
+    elif configs.split == 'val':
+        val_dataset_name = 'pitts30k_val'
 
     val_dataset_name = configs.dataset
     batch_size = configs.batch_size
