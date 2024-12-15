@@ -339,8 +339,12 @@ class PittsDatasetLseg(data.Dataset):
         return selected_db_idx, selected_q_idx
     
     def calculate_recall(self, dbFeat, encoder_dim=10):
-        qFeat = dbFeat[self.dbStruct.numDb:].astype('float32') # TODO
-        dbFeat = dbFeat[:self.dbStruct.numDb].astype('float32')
+        if self.extract_dataset:
+            qFeat = dbFeat[self.numDb:].astype('float32') # TODO
+            dbFeat = dbFeat[:self.numDb].astype('float32')
+        else:
+            qFeat = dbFeat[self.dbStruct.numDb:].astype('float32') # TODO
+            dbFeat = dbFeat[:self.dbStruct.numDb].astype('float32')
         
         print('====> Building faiss index')
         faiss_index = faiss.IndexFlatL2(encoder_dim)
@@ -360,8 +364,11 @@ class PittsDatasetLseg(data.Dataset):
                     correct_at_n[i:] += 1
                     break
                 
-        recall_at_n = correct_at_n / self.dbStruct.numQ
-        
+        if self.extract_dataset:
+            recall_at_n = correct_at_n / self.numQ
+        else:
+            recall_at_n = correct_at_n / self.dbStruct.numQ
+
         recalls = {} #make dict for output
         for i,n in enumerate(n_values):
             recalls[n] = recall_at_n[i]

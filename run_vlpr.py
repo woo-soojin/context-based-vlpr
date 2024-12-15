@@ -39,6 +39,7 @@ def parse_configs():
     parser.add_argument('--use_codebook', type=bool, default=False, help='the flag to use predefined codebook')
     parser.add_argument('--extract_dataset', type=bool, default=False, help='Extract partial dataset from whole dataset') # TODO
     parser.add_argument('--extract_context_graph', type=bool, default=False, help='Extract context graph embedding') # TODO
+    parser.add_argument('--use_context_graph', type=bool, default=False, help='Flag to use context graph') # TODO
     parser.add_argument('--dynamic_objects', nargs='+', default=[], help='index of dynamic objects')
     parser.add_argument('--save_log', type=bool, default=False, help='Save log messages')
 
@@ -265,23 +266,16 @@ def create_lseg_map_batch(pretrained_path, data_dir, camera_height, init_tf, rot
                 else:
                     dbFeat[indices, :] = query_histogram
         
-        if configs.build_codebook:
-            print('====> Building Codebook')
-            codebook = whole_test_set.build_codebook(total_descriptors)
-            np.save("{}/{}".format(data_dir, "codebook.npy"), codebook) # TODO
-        elif configs.extract_context_graph: # TODO
-            print('====> Building Context Graph Embeddings')
-            context_graph_embeddings = calculate_graph_embedding(total_graph)
-            np.save("{}/{}".format(data_dir, "context_graph_embeddings_64_wo_dynamic.npy"), context_graph_embeddings) # TODO
-        else:
-            whole_test_set.calculate_recall(dbFeat, encoder_dim)
-
     if configs.build_codebook:
         print('====> Building Codebook')
         codebook = whole_test_set.build_codebook(total_descriptors)
         np.save("{}/{}".format(data_dir, "codebook.npy"), codebook) # TODO
+    elif configs.extract_context_graph: # TODO
+        print('====> Building Context Graph Embeddings')
+        context_graph_embeddings = calculate_graph_embedding(total_graph)
+        np.save("{}/{}".format(data_dir, "context_graph_embeddings_64_wo_dynamic.npy"), context_graph_embeddings) # TODO
     else:
-        whole_test_set.calculate_recall(dbFeat)
+        whole_test_set.calculate_recall(dbFeat, encoder_dim)
            
 if __name__ == "__main__":
     configs = parse_configs()
