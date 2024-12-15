@@ -398,9 +398,9 @@ if __name__ == "__main__":
     print(opt)
 
     if opt.dataset.lower() == 'pittsburgh':
-        import pittsburgh as dataset
+        import dataloaders.pittsburgh as dataset
     elif opt.dataset.lower() == 'kitti':
-        import kitti as dataset
+        import dataloaders.kitti as dataset
     else:
         raise Exception('Unknown dataset')
 

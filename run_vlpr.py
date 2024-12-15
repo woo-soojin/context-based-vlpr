@@ -177,11 +177,11 @@ def create_lseg_map_batch(pretrained_path, data_dir, camera_height, init_tf, rot
 
     # TODO
     if configs.dataset.lower() == 'pittsburgh':
-        import pittsburgh as dataset
+        import dataloaders.pittsburgh as dataset
         whole_test_set = dataset.get_pitts_dataset_lseg(configs.extract_dataset, configs.random) # TODO
         print('Dataset: Pittsburgh')
     elif configs.dataset.lower() == 'kitti':
-        import kitti as dataset
+        import dataloaders.kitti as dataset
         whole_test_set = dataset.get_kitti_dataset_lseg(configs.random, configs.save_log)
         print('Dataset: Kitti')
     else:
