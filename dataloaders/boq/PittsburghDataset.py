@@ -3,8 +3,8 @@ import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
 
-DATASET_ROOT = '../data/pittsburgh/' 
-GT_ROOT = './datasets/'
+DATASET_ROOT = '../../data/pittsburgh/' 
+GT_ROOT = '../../datasets/'
 
 path_obj = Path(DATASET_ROOT)
 if not path_obj.exists():

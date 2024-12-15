@@ -31,6 +31,21 @@ ${ROOT}
 ```
 
 ## Evaluation
+### BoQ
+#### Pittsburgh Dataset
+- `dataset`: Dataset to use. (default: `pittsburgh`, options: `pittsburgh`, `kitti`)
+
+```bash
+python run_boq.py --dataset=pittsburgh --split=val
+```
+
+#### KITTI Dataset
+- `dataset`: Dataset to use. (default: `pittsburgh`, options: `pittsburgh`, `kitti`)
+
+```bash
+python run_boq.py --dataset=kitti
+```
+
 ### NetVLAD
 #### Pittsburgh Dataset
 - `mode`: Select mode. (default: `train`, options: `train`, `test`, `cluster`)

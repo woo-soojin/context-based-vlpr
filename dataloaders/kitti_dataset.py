@@ -21,7 +21,7 @@ import faiss
 import scipy.cluster.vq as vq
 from sklearn.cluster import KMeans
 
-root_dir = './data' # TODO
+root_dir = '../data' # TODO
 
 def input_transform():
     return transforms.Compose([

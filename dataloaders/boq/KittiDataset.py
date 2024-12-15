@@ -14,7 +14,7 @@ import cv2
 # I hardcoded the image names and ground truth for faster evaluation
 # performance is exactly the same as if you use VPR-Bench.
 
-root_dir = '../data'
+root_dir = '../../data'
 
 class KittiDataset(Dataset):
     def __init__(self, input_transform = None):
