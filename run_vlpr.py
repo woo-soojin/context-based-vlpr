@@ -17,7 +17,7 @@ from scipy import ndimage
 from lseg.scripts.additional_utils.models import resize_image, pad_image, crop_image
 from lseg.scripts.modules.models.lseg_net import LSegEncNet
 
-from modules.context_graph import calculate_centroids, create_graph, calculate_graph_embedding
+from utils.context_graph import calculate_centroids, create_graph, calculate_graph_embedding
 
 import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
@@ -25,7 +25,7 @@ from torch.utils.data import DataLoader
 def parse_configs():
     abs_path = os.path.dirname(os.path.abspath(__file__)) 
     ckpt_path = abs_path + "/lseg/scripts/checkpoints/demo_e200.ckpt"
-    parser = argparse.ArgumentParser(description="config for vlmap creation")
+    parser = argparse.ArgumentParser(description="config for visual-language place recognition")
     parser.add_argument('--data_path', type=str, default=os.path.join(abs_path, 'data'), metavar='PATH', help="the path for dataset required for vlmap creation")
     parser.add_argument('--pretrained_path', type=str, default=ckpt_path, metavar='PATH', help="the path for pretrained checkpoint of lseg")
     parser.add_argument('--mask_version', type=int, default=1, help='mask version | 0 | 1 |, (default: 1)')
@@ -177,11 +177,11 @@ def create_lseg_map_batch(pretrained_path, data_dir, camera_height, init_tf, rot
 
     # TODO
     if configs.dataset.lower() == 'pittsburgh':
-        import pittsburgh as dataset
+        import dataloaders.pittsburgh as dataset
         whole_test_set = dataset.get_pitts_dataset_lseg(configs.extract_dataset, configs.random) # TODO
         print('Dataset: Pittsburgh')
     elif configs.dataset.lower() == 'kitti':
-        import kitti as dataset
+        import dataloaders.kitti as dataset
         whole_test_set = dataset.get_kitti_dataset_lseg(configs.random, configs.save_log)
         print('Dataset: Kitti')
     else:

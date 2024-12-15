@@ -28,7 +28,7 @@ from scipy.io import loadmat
 import os
 from torchvision import transforms
 
-parser = argparse.ArgumentParser(description='pytorch-NetVlad')
+parser = argparse.ArgumentParser(description='config for NetVlad')
 parser.add_argument('--mode', type=str, default='train', help='Mode', choices=['train', 'test', 'cluster']) # TODO
 parser.add_argument('--batchSize', type=int, default=4, 
         help='Number of triplets (query, pos, negs). Each triplet consists of 12 images.')
@@ -398,9 +398,9 @@ if __name__ == "__main__":
     print(opt)
 
     if opt.dataset.lower() == 'pittsburgh':
-        import pittsburgh as dataset
+        import dataloaders.pittsburgh as dataset
     elif opt.dataset.lower() == 'kitti':
-        import kitti as dataset
+        import dataloaders.kitti as dataset
     else:
         raise Exception('Unknown dataset')
 
