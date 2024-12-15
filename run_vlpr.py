@@ -17,7 +17,7 @@ from scipy import ndimage
 from lseg.scripts.additional_utils.models import resize_image, pad_image, crop_image
 from lseg.scripts.modules.models.lseg_net import LSegEncNet
 
-from modules.context_graph import calculate_centroids, create_graph, calculate_graph_embedding
+from utils.context_graph import calculate_centroids, create_graph, calculate_graph_embedding
 
 import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
