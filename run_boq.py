@@ -67,14 +67,16 @@ def test():
     model = torch.hub.load("amaralibey/bag-of-queries", "get_trained_boq", backbone_name="resnet50", output_dim=16384)
     model = model.to(device)
 
-    if configs.split == 'test30k':
-        val_dataset_name = 'pitts30k_test'
-    elif configs.split == 'test250k':
-        val_dataset_name = 'pitts250k_test'
-    elif configs.split == 'val':
-        val_dataset_name = 'pitts30k_val'
+    if configs.dataset == 'pittsburgh':
+        if configs.split == 'test30k':
+            val_dataset_name = 'pitts30k_test'
+        elif configs.split == 'test250k':
+            val_dataset_name = 'pitts250k_test'
+        elif configs.split == 'val':
+            val_dataset_name = 'pitts30k_val'
+    elif configs.dataset == 'kitti':
+        val_dataset_name = 'kitti'
 
-    val_dataset_name = configs.dataset
     batch_size = configs.batch_size
 
     val_dataset, num_references, num_queries, ground_truth = get_val_dataset(val_dataset_name)

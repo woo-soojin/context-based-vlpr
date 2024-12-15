@@ -18,7 +18,7 @@ import scipy.cluster.vq as vq
 from sklearn.cluster import KMeans
 import time
 
-root_dir = './data/pittsburgh'
+root_dir = '../data/pittsburgh'
 if not exists(root_dir):
     raise FileNotFoundError('root_dir is hardcoded, please adjust to point to Pittsburth dataset')
 
