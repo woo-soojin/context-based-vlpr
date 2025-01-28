@@ -1,4 +1,4 @@
-# 🤖 Context-based Visual Language Place Recognition (ICRA 2025)
+# 🤖 Context-based Visual Language Place Recognition
 
 <p align="center">
 Accepted to the IEEE International Conference on Robotics and Automation (ICRA) 2025. </br>
