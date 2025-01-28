@@ -1,4 +1,10 @@
-# Context-based Visual Language Place Recognition
+# 🤖 Context-based Visual Language Place Recognition (ICRA 2025)
+
+<p align="center">
+Accepted to the IEEE International Conference on Robotics and Automation (ICRA) 2025. </br>
+<strong> Soojin Woo and Seong-Woo Kim </strong> </br>
+Seoul National University </br>
+</p>
 
 ## Download Dataset
 - KITTI dataset </br>
