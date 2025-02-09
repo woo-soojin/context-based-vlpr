@@ -213,7 +213,7 @@ def create_lseg_map_batch(pretrained_path, data_dir, camera_height, init_tf, rot
     if configs.extract_context_graph:
         total_graph = list()
     elif configs.use_context_graph:
-        context_graph_embedding_vectors = np.load("{}/{}".format(data_dir, "context_graph_embeddings_64_wo_dynamic.npy")) # TODO
+        context_graph_embedding_vectors = np.load("{}/{}".format(data_dir, "context_graph_embeddings.npy")) # TODO
 
     for iteration, (input, indices) in enumerate(test_data_loader, 1):
         input = input.detach().cpu().numpy()
@@ -273,7 +273,7 @@ def create_lseg_map_batch(pretrained_path, data_dir, camera_height, init_tf, rot
     elif configs.extract_context_graph: # TODO
         print('====> Building Context Graph Embeddings')
         context_graph_embeddings = calculate_graph_embedding(total_graph)
-        np.save("{}/{}".format(data_dir, "context_graph_embeddings_64_wo_dynamic.npy"), context_graph_embeddings) # TODO
+        np.save("{}/{}".format(data_dir, "context_graph_embeddings.npy"), context_graph_embeddings) # TODO
     else:
         whole_test_set.calculate_recall(dbFeat, encoder_dim)
            
