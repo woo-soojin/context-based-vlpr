@@ -21,6 +21,9 @@ Seoul National University </br>
 ```
 ${ROOT}
 └── data/
+     └── codebook.npy
+     └── text_embedding.npy
+     └── context_graph_embeddings
      └── kitti/
           └── 00/
                └── image_2/
@@ -29,8 +32,6 @@ ${ROOT}
 └── netvlad/
      └── checkpoints/
 └── lseg/
-     └── codebook.npy
-     └── text_embedding.npy
      └── sripts/
          └── checkpoints/
               └── demo_e200.ckpt
@@ -97,6 +98,8 @@ python build_text_embedding.py
 - `build_codebook`: If `True`, generate codebook for BoW. If `False` calculate recall for query images. (default: `False`)
 - `use_codebook`: If `True`, use predefined codebook. (default: `False`)
 - `extract_dataset`: Extract partial dataset from whole dataset. (default: `False`)
+- `extract_context_graph`: Extract context graph embedding. (default: `False`)
+- `extract_context_graph`: Use context graph embedding. (default: `False`)
 - `dynamic_objects`: Index of dynamic objects within text embedding
 - `save_log`: Save log messages (default: `False`)
 
@@ -113,6 +116,8 @@ python run_vlpr.py --dataset=pittsburgh
 - `build_codebook`: If `True`, generate codebook for BoW. If `False` calculate recall for query images. (default: `False`)
 - `use_codebook`: If `True`, use predefined codebook. (default: `False`)
 - `extract_dataset`: Extract partial dataset from whole dataset. (default: `False`)
+- `extract_context_graph`: Extract context graph embedding. (default: `False`)
+- `extract_context_graph`: Use context graph embedding. (default: `False`)
 - `dynamic_objects`: Index of dynamic objects within text embedding
 - `save_log`: Save log messages (default: `False`)
 
