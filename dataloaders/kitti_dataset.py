@@ -149,7 +149,7 @@ class KittiDatasetLseg(data.Dataset):
         correct_at_n = np.zeros(len(n_values))
         for qIx, pred in enumerate(predictions):
             for i,n in enumerate(n_values):
-                if np.any(np.in1d(pred[:n], self.get_positives[qIx])):
+                if np.any(np.in1d(pred[:n], self.get_positives(qIx))):
                     correct_at_n[i:] += 1
                     break
         

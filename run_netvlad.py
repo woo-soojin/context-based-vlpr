@@ -218,14 +218,12 @@ def test(eval_set, epoch=0, write_tboard=False):
     _, predictions = faiss_index.search(qFeat, max(n_values)) 
 
     # for each query get those within threshold distance
-    gt = eval_set.getPositives() 
-
     correct_at_n = np.zeros(len(n_values))
     #TODO can we do this on the matrix in one go?
     for qIx, pred in enumerate(predictions):
         for i,n in enumerate(n_values):
             # if in top N then also in top NN, where NN > N
-            if np.any(np.in1d(pred[:n], gt[qIx])):
+            if np.any(np.in1d(pred[:n], eval_set.get_positives(qIx))):
                 correct_at_n[i:] += 1
                 break
 
@@ -282,13 +280,10 @@ def kitti_test(eval_set, epoch=0, write_tboard=False):
     _, predictions = faiss_index.search(qFeat, max(n_values))
 
     # for each query get those within threshold distance
-    gt = eval_set.get_positives() 
-
-    # for each query get those within threshold distance
     correct_at_n = np.zeros(len(n_values))
     for qIx, pred in enumerate(predictions):
         for i,n in enumerate(n_values):
-            if np.any(np.in1d(pred[:n], gt[qIx])):
+            if np.any(np.in1d(pred[:n], eval_set.get_positives(qIx))):
                 correct_at_n[i:] += 1
                 break
             
