@@ -99,7 +99,7 @@ python build_text_embedding.py
 - `use_codebook`: If `True`, use predefined codebook. (default: `False`)
 - `extract_dataset`: Extract partial dataset from whole dataset. (default: `False`)
 - `extract_context_graph`: Extract context graph embedding. (default: `False`)
-- `extract_context_graph`: Use context graph embedding. (default: `False`)
+- `use_context_graph`: Use context graph embedding. (default: `False`)
 - `dynamic_objects`: Index of dynamic objects within text embedding
 - `save_log`: Save log messages (default: `False`)
 
@@ -117,7 +117,7 @@ python run_vlpr.py --dataset=pittsburgh
 - `use_codebook`: If `True`, use predefined codebook. (default: `False`)
 - `extract_dataset`: Extract partial dataset from whole dataset. (default: `False`)
 - `extract_context_graph`: Extract context graph embedding. (default: `False`)
-- `extract_context_graph`: Use context graph embedding. (default: `False`)
+- `use_context_graph`: Use context graph embedding. (default: `False`)
 - `dynamic_objects`: Index of dynamic objects within text embedding
 - `save_log`: Save log messages (default: `False`)
 
