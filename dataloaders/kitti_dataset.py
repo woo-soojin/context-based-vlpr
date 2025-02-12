@@ -57,14 +57,11 @@ class KittiDatasetLseg(data.Dataset):
         with open(self.gt_pose_path, 'r') as poses:
             self.utm_coord = [[float(pose.split()[3]), float(pose.split()[7])] for pose in poses]
 
-        # if not onlyDB: # TODO
-        #     self.images += [join(queries_dir, qIm) for qIm in self.dbStruct.qImage]
-
-        # self.whichSet = self.dbStruct.whichSet
-        # self.dataset = self.dbStruct.dataset
+        self.gt_pose = join(gt_path, 'poses.txt')
+        with open(self.gt_pose, 'r') as poses:
+            self.gt_poses = [[pose.split()[3], pose.split()[7]] for pose in poses]
 
         self.positives = None
-        # self.distances = None
         self.posDistThr = 25
 
         self.numDb = int(len(self.images)/2) # TODO
@@ -91,34 +88,23 @@ class KittiDatasetLseg(data.Dataset):
     def calculate_distance_diff(self, q_pose, gt_pose):
         qx = float(q_pose[0])
         qy = float(q_pose[1])
-        qz = float(q_pose[2])
 
         gt_x = float(gt_pose[0])
         gt_y = float(gt_pose[1])
-        gt_z = float(gt_pose[2])
 
-        return math.sqrt((gt_x - qx)**2 + (gt_y - qy)**2 + (gt_z - qz)**2)
+        return math.sqrt((gt_x - qx)**2 + (gt_y - qy)**2)
 
-    def get_positives(self): # TODO
-        # positive = list()
-        # q_pose = self.gt_poses[idx]
+    def get_positives(self, idx, thres_distance=25):
+        positive = list()
+        q_pose = self.gt_poses[idx]
         
-        # for gt_idx, gt_pose in enumerate(self.gt_poses):
-        #     diff = self.calculate_distance_diff(q_pose, gt_pose)
+        for gt_idx, gt_pose in enumerate(self.gt_poses):
+            diff = self.calculate_distance_diff(q_pose, gt_pose)
 
-        #     if(diff <= thres_distance):
-        #         positive.append(gt_idx)
+            if(diff <= thres_distance):
+                positive.append(gt_idx)
 
-        # return np.array(positive)
-
-        if  self.positives is None:
-            knn = NearestNeighbors(n_jobs=-1)
-            self.utm_coord = np.array(self.utm_coord)
-            knn.fit(self.utm_coord[:self.numDb])
-
-            self.distances, self.positives = knn.radius_neighbors(self.utm_coord[self.numDb:],
-                    radius=self.posDistThr)
-        return self.positives
+        return np.array(positive)
     
     def build_codebook(self, X, voc_size=10): # TODO voc_size 10
         n, desc, dim = X.shape
@@ -160,12 +146,10 @@ class KittiDatasetLseg(data.Dataset):
         _, predictions = faiss_index.search(qFeat, max(n_values))
 
         # for each query get those within threshold distance
-        gt = self.get_positives() 
-
         correct_at_n = np.zeros(len(n_values))
         for qIx, pred in enumerate(predictions):
             for i,n in enumerate(n_values):
-                if np.any(np.in1d(pred[:n], gt[qIx])):
+                if np.any(np.in1d(pred[:n], self.get_positives[qIx])):
                     correct_at_n[i:] += 1
                     break
         
@@ -207,14 +191,11 @@ class KittiDatasetNetVLAD(data.Dataset):
         with open(self.gt_pose_path, 'r') as poses:
             self.utm_coord = [[float(pose.split()[3]), float(pose.split()[7])] for pose in poses]
         
-        # if not onlyDB: # TODO
-        #     self.images += [join(queries_dir, qIm) for qIm in self.dbStruct.qImage]
-
-        # self.whichSet = self.dbStruct.whichSet
-        # self.dataset = self.dbStruct.dataset
+        self.gt_pose = join(gt_path, 'poses.txt')
+        with open(self.gt_pose, 'r') as poses:
+            self.gt_poses = [[pose.split()[3], pose.split()[7]] for pose in poses]
 
         self.positives = None
-        # self.distances = None
         self.posDistThr = 25
 
         self.numDb = int(len(self.images)/2) # TODO
@@ -240,35 +221,23 @@ class KittiDatasetNetVLAD(data.Dataset):
     def __len__(self):
         return len(self.images)
     
-    # def calculate_distance_diff(self, q_pose, gt_pose):
-    #     qx = float(q_pose[0])
-    #     qy = float(q_pose[1])
-    #     qz = float(q_pose[2])
+    def calculate_distance_diff(self, q_pose, gt_pose):
+        qx = float(q_pose[0])
+        qy = float(q_pose[1])
 
-    #     gt_x = float(gt_pose[0])
-    #     gt_y = float(gt_pose[1])
-    #     gt_z = float(gt_pose[2])
+        gt_x = float(gt_pose[0])
+        gt_y = float(gt_pose[1])
 
-    #     return math.sqrt((gt_x - qx)**2 + (gt_y - qy)**2 + (gt_z - qz)**2)
+        return math.sqrt((gt_x - qx)**2 + (gt_y - qy)**2)
 
-    # def getPositives(self, idx, thres_distance=1.5): # TODO
-    #     positive = list()
-    #     q_pose = self.gt_poses[idx]
+    def get_positives(self, idx, thres_distance=1.5): # TODO
+        positive = list()
+        q_pose = self.gt_poses[idx]
         
-    #     for gt_idx, gt_pose in enumerate(self.gt_poses):
-    #         diff = self.calculate_distance_diff(q_pose, gt_pose)
+        for gt_idx, gt_pose in enumerate(self.gt_poses):
+            diff = self.calculate_distance_diff(q_pose, gt_pose)
 
-    #         if(diff <= thres_distance):
-    #             positive.append(gt_idx)
+            if(diff <= thres_distance):
+                positive.append(gt_idx)
 
-    #     return np.array(positive)
-
-    def get_positives(self): # TODO
-        if  self.positives is None:
-            knn = NearestNeighbors(n_jobs=-1)
-            self.utm_coord = np.array(self.utm_coord)
-            knn.fit(self.utm_coord[:self.numDb])
-
-            self.distances, self.positives = knn.radius_neighbors(self.utm_coord[self.numDb:],
-                    radius=self.posDistThr)
-        return self.positives
+        return np.array(positive)
