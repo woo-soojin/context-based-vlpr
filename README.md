@@ -22,8 +22,8 @@ Seoul National University </br>
 ${ROOT}
 └── data/
      └── codebook.npy
-     └── text_embedding.npy
      └── context_graph_embeddings
+     └── text_embedding.npy
      └── kitti/
           └── 00/
                └── image_2/

@@ -230,7 +230,7 @@ class KittiDatasetNetVLAD(data.Dataset):
 
         return math.sqrt((gt_x - qx)**2 + (gt_y - qy)**2)
 
-    def get_positives(self, idx, thres_distance=1.5): # TODO
+    def get_positives(self, idx, thres_distance=25): # TODO
         positive = list()
         q_pose = self.gt_poses[idx]
         
